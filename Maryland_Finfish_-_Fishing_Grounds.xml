@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+    <idinfo>
+        <citation>
+            <citeinfo>
+                <origin/>
+                <pubdate>20140501</pubdate>
+                <title>Maryland Finfish - Fishing Grounds</title>
+                <onlink>https://geodata.md.gov/imap/rest/services/Biota/MD_Finfish/FeatureServer/10</onlink>
+            </citeinfo>
+        </citation>
+        <descript>
+            <abstract>Dataset shows popular recreational fishing spots in the Maryland portion of the Chesapeake Bay. Fishing areas were derived from the publication &amp;quot;Anglers' Guide to the United States Atlantic Coast, Fish, Fishing Grounds &amp;amp; Fishing Facilities&amp;quot;and from personal communication with Keith Lockwood, MDNR, Fisheries Service in June 2000.The Department of Natural Resources makes no warranty, expressed or implied, as to the use or appropriateness of Spatial Data, and there are no warranties of merchantability or fitness for a particular purpose or use. The information contained in Spatial Data is from publicly available sources, but no representation is made as to the accuracy or completeness of Spatial Data. The Department of Natural Resources shall not be subject to liability for human error, error due to software conversion, defect, or failure of machines, or any material used in the connection with the machines, including tapes, disks, CD-ROM’s or DVD-ROM’s and energy. The Department of Natural Resources shall not be liable for any lost profits, consequential damages, or claims against the Department of Natural Resources by third parties. The liability of the Department of Natural Resources for damage regardless of the form of the action shall not exceed any distribution fees that may have been paid in obtaining Spatial Data.This is a MD iMAP hosted service. Find more information at https://imap.maryland.gov.Feature Service Link:https://geodata.md.gov/imap/rest/services/Biota/MD_Finfish/FeatureServer/10</abstract>
+            <purpose>Maryland Finfish - Fishing Grounds</purpose>
+        </descript>
+        <status>
+            <update>None planned</update>
+        </status>
+        <keywords>
+            <theme>
+                <themekt>None</themekt>
+                <themekey>BIOT</themekey>
+                <themekey>biota</themekey>
+                <themekey>environment</themekey>
+                <themekey>fisheries</themekey>
+                <themekey>fish</themekey>
+                <themekey>WMS</themekey>
+                <themekey>WFS</themekey>
+                <themekey>MD</themekey>
+                <themekey>Maryland</themekey>
+                <themekey>Vector</themekey>
+                <themekey>Dynamic</themekey>
+                <themekey>Maryland Department of Natural Resources</themekey>
+                <themekey>Spawning Habitat</themekey>
+                <themekey>Juvenile Habitat</themekey>
+                <themekey>Tidal</themekey>
+                <themekey>Adult Habitat</themekey>
+                <themekey>Artificial Reef</themekey>
+                <themekey>fishing grounds</themekey>
+                <themekey>active pound net sites</themekey>
+                <themekey>MD iMAP</themekey>
+                <themekey>KML</themekey>
+            </theme>
+        </keywords>
+        <accconst>None</accconst>
+        <useconst>The Spatial Data, and the information therein, (collectively the "Data") is provided "as is" without warranty of any kind, either expressed, implied, or statutory. The user assumes the entire risk as to quality and performance of the Data. No guarantee of accuracy is granted, nor is any responsibility for reliance thereon assumed. In no event shall the State of Maryland be liable for direct, indirect, incidental, consequential or special damages of any kind. The State of Maryland does not accept liability for any damages or misrepresentation caused by inaccuracies in the Data or as a result to changes to the Data, nor is there responsibility assumed to maintain the Data in any manner or form. The Data can be freely distributed as long as the metadata entry is not modified or deleted. Any data derived from the Data must acknowledge the State of Maryland in the metadata.</useconst>
+        <datacred>MD iMAP, DNR</datacred>
+    </idinfo>
+    <metainfo>
+        <metd>20170803</metd>
+        <metc>
+            <cntinfo>
+                <!--no contact person or organization name available-->
+            </cntinfo>
+        </metc>
+        <metstdn>FGDC Content Standard for Digital Geospatial Metadata</metstdn>
+        <metstdv>FGDC-STD-001-1998</metstdv>
+        <mettc>local time</mettc>
+    </metainfo>
+</metadata>
