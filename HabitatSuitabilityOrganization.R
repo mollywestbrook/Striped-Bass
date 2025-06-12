@@ -7,6 +7,7 @@ library(here)
 library(tidyverse)
 library(data.table)
 library(leaflet)
+
 library(sf)
 library(sp)
 library(ggrepel)
@@ -307,7 +308,7 @@ historicbaydata_fishingareas <- left_join(fishingareacoords_df, historicbaydata,
 
 #save the data for the app
 #commented for subsequent runs; st_write doesn't overwrite, but uncomment this line on first run
-#st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons_dd.shp", sep="")))
+#st_write(mddatathiscruise.dd_surface, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_surface.shp", sep="")))
   
 #Filter surface for the map:
 fishingareacoords.dd_surface <- fishingareacoords.dd %>%
@@ -547,7 +548,7 @@ saveWidget(as_widget(historicbaydata_fishingareas_plot), paste(here("App Figures
 
 ###############################################################################
 
-#Andrew also has the center channel figure. Tbd
+#Andrew also has the center channel figure:
 
 #bring in cross section file:
 crosssectionmain<-read_csv("mainchannelpointsCLEAN.csv")
@@ -597,7 +598,7 @@ saveWidget(as_widget(mainchannelplotly), paste(here("App Figures"),"/MainChannel
 
 #Potomac as well, seeing as it was missing from Mark's dashboard...
 
-crosssectionpotomac<-read.csv("C:/Users/mwestbrook/Desktop/Projects/Striped Bass/potomacmainstem.csv")
+crosssectionpotomac<-read.csv(here("potomacmainstem.csv"))
 crosssectionpotomac<-crosssectionpotomac[c("UTMX","UTMY")]
 crosssectionpotomac$keep<-"YES"
 
