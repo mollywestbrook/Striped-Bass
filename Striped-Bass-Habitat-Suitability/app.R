@@ -79,6 +79,18 @@ suitability_colors <- c(
   "Suitable" = "dodgerblue"
 )
 
+#finally, Andrew's hard code for the historic mean:
+
+percentsuitable<-c(100,100,100,100,88.25,78.68,87.54,12.92,48.79
+                   ,81.06,75.02,87.92,NA,NA,NA)
+months<-c("January","February","March","April","May","Early June","Late June","Early July",
+          "Late July","Early August","Late August","September","October","November","December")
+
+#This is hard-coded, but ideally I want to take this from a file:
+maxdata<-c(100,100,100,100,99.9,91.8,89.1,88.6,85.5,86.3,91.4,97.9,100,100,100)
+mindata<-c(98.6,100,99.9,96.3,71.6,67.9,59.5,11.7,2.52,4.31,26.2,77.1,88.4,97,95.3)
+meandata<-c(99.9,100,100,99.4,90.8,78.3,76.1,64.5,56.9,61,72.1,87.9,97,99.8,99.8)
+
 #Bring in objects
 
 
