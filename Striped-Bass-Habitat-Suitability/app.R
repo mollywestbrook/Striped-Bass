@@ -334,7 +334,7 @@ server <- function(input, output, session) {
   })
   
   output$WholeBay10yrs <- renderPlotly({
-    plot_ly(historicbaydatasummary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
+    plot_ly(historicbaydata_summary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
             type = 'bar') %>%
       layout(title = 'Whole Bay Suitability for the Previous Ten Years',
              yaxis = list(title = 'Percent of Habitat'),
