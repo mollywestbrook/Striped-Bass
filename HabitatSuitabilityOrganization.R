@@ -7,7 +7,6 @@ library(here)
 library(tidyverse)
 library(data.table)
 library(leaflet)
-
 library(sf)
 library(sp)
 library(ggrepel)
@@ -52,6 +51,15 @@ suitableDO<-4
 tolerableDO<-3
 marginalDO<-2
 unsuitableDO<-2
+
+#color palette:
+#little object necessary for stacked bar plots
+suitability_colors <- c(
+  "Unsuitable" = "black",
+  "Marginal" = "orange",
+  "Tolerable" = "yellow",
+  "Suitable" = "dodgerblue"
+)
 
 #############################################################################################
 
@@ -210,6 +218,19 @@ fishingareacoords.dd <- fishingareacoords.dd %>%
     habitat == "Tolerable" ~ "yellow",
     habitat == "Suitable" ~ "dodgerblue"))
 
+mddatathiscruise <- mddatathiscruise %>%
+  mutate(habitat = case_when(
+    Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
+    Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
+    Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
+    Wtemp>suitabletemp | DO>suitableDO ~ "Suitable",
+    TRUE ~ "Unsuitable")) %>%
+  mutate(color = case_when(
+    habitat == "Unsuitable" ~ "black",
+    habitat == "Marginal" ~ "orange",
+    habitat == "Tolerable" ~ "yellow",
+    habitat == "Suitable" ~ "dodgerblue"))
+
 #################################################################################
 
 #And now we do a similar process for the last ten years:
@@ -296,9 +317,6 @@ rm(yearlist)
 #so we can reuse the same dataframe and filter it for the historical data
 historicbaydata_fishingareas <- left_join(fishingareacoords_df, historicbaydata, by=c("UTMX","UTMY"), relationship = "many-to-many")
 
-#and do a bit of cleanup before we generate our figures
-#rm(fishingareacoords.sf, fishingareapolygons.utm, fishingareacoords_df, fishingareacoords)
-
 ################################################################################################
 
 ### FIGURES ###
@@ -306,10 +324,6 @@ historicbaydata_fishingareas <- left_join(fishingareacoords_df, historicbaydata,
 #Now we want a beautiful leaflet map. 
 #It's going to have 3 layers: the fishing hotspots, the suitability of the hotspots, and the suitability of the whole bay
 
-#save the data for the app
-#commented for subsequent runs; st_write doesn't overwrite, but uncomment this line on first run
-#st_write(mddatathiscruise.dd_surface, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_surface.shp", sep="")))
-  
 #Filter surface for the map:
 fishingareacoords.dd_surface <- fishingareacoords.dd %>%
   filter(Sdepth == 0)
@@ -332,6 +346,15 @@ baymap <- leaflet() %>%
   hideGroup(c("Fishing Areas", "Whole Bay Suitability"))
 baymap
 
+#save the polygons for the app:
+
+#commented for subsequent runs; st_write doesn't overwrite, but uncomment this line on first run
+
+#st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "mddatathiscruise_dd_surface.shp", sep="")))
+#st_write(fishingareacoords.dd_surface, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "mddatathiscruise_dd_surface.shp", sep="")))
+#st_write(mddatathiscruise.dd_surface, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_surface.shp", sep="")))
+
+
 ###################################################################################
 
 #next, we want to summarize the whole bay and the fishing hotspots
@@ -339,26 +362,14 @@ baymap
 
 #whole bay first
 
-#first, we'll assign a label to the dataframe labelling each point:
-mddatathiscruise <- mddatathiscruise %>%
-  mutate(habitat = case_when(
-    Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
-    Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
-    Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>suitabletemp | DO>suitableDO ~ "Suitable",
-    TRUE ~ "Unsuitable"))
-
-#summarize the total volume of water
-wholebaysurfacesummary <- mddatathiscruise %>%
-  filter(Sdepth == 0) %>%
-  group_by(habitat) %>%
+#calculate surface summary
+wholebaysurfacesummary <- mddatathiscruise.dd_surface %>%
+  st_drop_geometry() %>%
+  group_by(habitat, color) %>%
   summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
-  mutate(percent = round(volume/sum(volume)*100, 2)) %>%
-  mutate(color = case_when(
-    habitat == "Unsuitable" ~ "black",
-    habitat == "Marginal" ~ "orange",
-    habitat == "Tolerable" ~ "yellow",
-    habitat == "Suitable" ~ "dodgerblue"))
+  ungroup() %>%
+  mutate(volumetotal = sum(volume)) %>%
+  mutate(percent = volume/volumetotal*100)
 
 #write this df out for the shiny app:
 fwrite(wholebaysurfacesummary, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "wholebaysummary.csv", sep="")), row.names=FALSE)
@@ -377,30 +388,21 @@ saveWidget(as_widget(wholebaysummaryplot), paste(here("App Figures"),"/PieChart_
 
 #Now, just the fishing hotspots, just like above:
 
-fishingareadatathiscruise <- fishingareadatathiscruise %>%
-  mutate(habitat = case_when(
-    Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
-    Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
-    Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>suitabletemp | DO>suitableDO ~ "Suitable",
-    TRUE ~ "Unsuitable"))
-
-fishinghotspotssummary <- fishingareadatathiscruise %>%
-  group_by(habitat) %>%
+fishinghotspotsummary <- fishingareacoords.dd_surface %>%
+  st_drop_geometry() %>%
+  group_by(habitat, color) %>%
   summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
-  mutate(percent = round(volume/sum(volume)*100, 2)) %>%
-  mutate(color = case_when(
-    habitat == "Unsuitable" ~ "black",
-    habitat == "Marginal" ~ "orange",
-    habitat == "Tolerable" ~ "yellow",
-    habitat == "Suitable" ~ "dodgerblue"))
-#write out for the app
-fwrite(fishinghotspotssummary, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "fishinghotspotssummary.csv", sep="")), row.names=FALSE)
+  ungroup() %>%
+  mutate(volumetotal = sum(volume)) %>%
+  mutate(percent = volume/volumetotal*100)
 
-fishinghotspotsplot <- plot_ly(fishinghotspotssummary, labels = ~habitat, values = ~percent, type = 'pie',
+#write out for the app
+fwrite(fishinghotspotsummary, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "fishinghotspotsummary.csv", sep="")), row.names=FALSE)
+
+fishinghotspotsplot <- plot_ly(fishinghotspotsummary, labels = ~habitat, values = ~percent, type = 'pie',
                                textposition = 'outside',
                                textinfo = 'label+percent',
-                               marker = list(colors = fishinghotspotssummary$color)) %>%
+                               marker = list(colors = fishinghotspotsummary$color)) %>%
   layout(title = 'Fishing Hotspots Habitat Suitability',
          xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
@@ -415,7 +417,7 @@ saveWidget(as_widget(fishinghotspotsplot), paste(here("App Figures"),"/PieChart_
 #Whole Bay first
 
 #making our summary sheets for pie charts
-#again, first we sort suitability
+#first we sort suitability
 historicbaydata <- historicbaydata %>%
   mutate(Habitat = case_when(
     Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
@@ -463,13 +465,6 @@ fwrite(historicbaydatasummary, file = here("Striped-Bass-Habitat-Suitability", p
 #   ylab("Percent of Habitat")
 
 #interactive plotly
-
-suitability_colors <- c(
-  "Unsuitable" = "black",
-  "Marginal" = "orange",
-  "Tolerable" = "yellow",
-  "Suitable" = "dodgerblue"
-)
 
 historicbaydata_wholebay_plot <- 
   plot_ly(historicbaydatasummary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
