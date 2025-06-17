@@ -138,3 +138,53 @@ leaflet() %>%
     overlayGroups = c("Polygons", "Points A", "Points B"),
     options = layersControlOptions(collapsed = FALSE)
   )
+
+##################################################################################
+
+#Mark wanted to clean up the cross-section figures...hm
+
+plot_ly()%>%
+  add_trace(x=crosssectionmain$UTMX,y=crosssectionmain$UTMY,
+            hoverinfo="none",
+            type='scatter',mode='markers',
+            marker=list(color=mainchanneldata$color))%>%
+  layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed"))%>%
+  layout(yaxis=list(title="Depth (ft)",autorange="reversed"))
+
+##################################################################################
+
+#issue with prev year's data:
+
+tmp <- read_csv(here("DO_2015_05.txt"), col_names = T)
+
+##################################################################################
+
+#Cleaning up the historical averages figure first. 
+
+#hot spots
+percentsuitablehs<-c(100,100,100,100,88.25,78.68,87.54,12.92,48.79
+                     ,81.06,75.02,87.92,NA,NA,NA)
+months<-c("January","February","March","April","May","Early June","Late June","Early July",
+          "Late July","Early August","Late August","September","October","November","December")
+
+#This is hard-coded, but ideally I want to take this from a file:
+maxdatahs<-c(100,100,100,100,99.9,91.8,89.1,88.6,85.5,86.3,91.4,97.9,100,100,100)
+mindatahs<-c(98.6,100,99.9,96.3,71.6,67.9,59.5,11.7,2.52,4.31,26.2,77.1,88.4,97,95.3)
+meandatahs<-c(99.9,100,100,99.4,90.8,78.3,76.1,64.5,56.9,61,72.1,87.9,97,99.8,99.8)
+
+historicalmeans_hotspots <- data.frame(months, maxdatahs, mindatahs, meandatahs)
+
+fwrite(historicalmeans_hotspots, "historicalmeans85-22_hotspots.csv", row.names=FALSE)
+
+#whole bay
+percentsuitablewb<-c(100,99.98915472,100,99.96483655,94.82371189,89.67849548,92.61107918,59.5016,NA,NA,NA,NA,NA,NA,NA)
+###mean data
+maxdatawb<-c(100.00000,100.00000,100.00000,100.00000,99.94289, 91.80321,89.09262,88.55161,85.45735,86.25828,91.38191,97.89752,100.00000,100.00000,100.00000)
+mindatawb<-c(98.627215,99.964205,99.853254,96.259686,71.554099,67.889627,59.486843,11.739094,2.516686,4.312487,26.203638,77.126050,88.448145,97.011848,95.315226)
+meandatawb<-c(99.93728,99.99834,99.99126,99.44283,90.78836,78.31424,76.06932,64.54837,56.85114,60.98641,72.08090,87.94222,97.02661,99.83884,99.77699)
+
+historicalmeans_wholebay <- data.frame(months, maxdatawb, mindatawb, meandatawb)
+
+fwrite(historicalmeans_wholebay, "historicalmeans85-22_wholebay.csv", row.names=FALSE)
+
+

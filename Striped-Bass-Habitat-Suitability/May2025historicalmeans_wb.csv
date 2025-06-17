@@ -1,0 +1,31 @@
+months,maxdatawb,mindatawb,monthseq,timekey,meansuitability
+January,100,98.627215,1,historic,99.93728
+February,100,99.964205,2,historic,99.99834
+March,100,99.853254,3,historic,99.99126
+April,100,96.259686,4,historic,99.44283
+May,99.94289,71.554099,5,historic,90.78836
+Early June,91.80321,67.889627,6,historic,78.31424
+Late June,89.09262,59.486843,7,historic,76.06932
+Early July,88.55161,11.739094,8,historic,64.54837
+Late July,85.45735,2.516686,9,historic,56.85114
+Early August,86.25828,4.312487,10,historic,60.98641
+Late August,91.38191,26.203638,11,historic,72.0809
+September,97.89752,77.12605,12,historic,87.94222
+October,100,88.448145,13,historic,97.02661
+November,100,97.011848,14,historic,99.83884
+December,100,95.315226,15,historic,99.77699
+January,100,98.627215,1,currentyear,100
+February,100,99.964205,2,currentyear,99.98915472
+March,100,99.853254,3,currentyear,100
+April,100,96.259686,4,currentyear,99.96483655
+May,99.94289,71.554099,5,currentyear,94.82371189
+Early June,91.80321,67.889627,6,currentyear,89.67849548
+Late June,89.09262,59.486843,7,currentyear,92.61107918
+Early July,88.55161,11.739094,8,currentyear,59.5016
+Late July,85.45735,2.516686,9,currentyear,
+Early August,86.25828,4.312487,10,currentyear,
+Late August,91.38191,26.203638,11,currentyear,
+September,97.89752,77.12605,12,currentyear,
+October,100,88.448145,13,currentyear,
+November,100,97.011848,14,currentyear,
+December,100,95.315226,15,currentyear,

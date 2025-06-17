@@ -29,7 +29,7 @@ library(shinyjs)
 
 #### UPDATE THIS WITH CURRENT CRUISE FILE
 
-thiscruise <- "BAY844.csv"
+thiscruise <- "BAY888.csv"
 
 #########################################
 
@@ -79,24 +79,7 @@ suitability_colors <- c(
   "Suitable" = "dodgerblue"
 )
 
-#finally, Andrew's hard code for the historic mean:
-months<-c("January","February","March","April","May","Early June","Late June","Early July",
-          "Late July","Early August","Late August","September","October","November","December")
-
-percentsuitablehs<-c(100,100,100,100,88.25,78.68,87.54,12.92,48.79
-                     ,81.06,75.02,87.92,NA,NA,NA)
-maxdatahs<-c(100,100,100,100,99.9,91.8,89.1,88.6,85.5,86.3,91.4,97.9,100,100,100)
-mindatahs<-c(98.6,100,99.9,96.3,71.6,67.9,59.5,11.7,2.52,4.31,26.2,77.1,88.4,97,95.3)
-meandatahs<-c(99.9,100,100,99.4,90.8,78.3,76.1,64.5,56.9,61,72.1,87.9,97,99.8,99.8)
-
-percentsuitablewb<-c(100,99.98915472,100,99.96483655,94.82371189,89.67849548,92.61107918,59.5016,NA,NA,NA,NA,NA,NA,NA)
-maxdatawb<-c(100.00000,100.00000,100.00000,100.00000,99.94289, 91.80321,89.09262,88.55161,85.45735,86.25828,91.38191,97.89752,100.00000,100.00000,100.00000)
-mindatawb<-c(98.627215,99.964205,99.853254,96.259686,71.554099,67.889627,59.486843,11.739094,2.516686,4.312487,26.203638,77.126050,88.448145,97.011848,95.315226)
-meandatawb<-c(99.93728,99.99834,99.99126,99.44283,90.78836,78.31424,76.06932,64.54837,56.85114,60.98641,72.08090,87.94222,97.02661,99.83884,99.77699)
-
-
 #Bring in objects
-
 
 files <- list.files(pattern = "wholebaysummary")
 wholebaysurfacesummary <- read_csv(files[1])
@@ -115,6 +98,12 @@ mainchanneldata <- read_csv(files[1])
 
 files <- list.files(pattern = "potomacchanneldata")
 potomacchanneldata <- read_csv(files[1])
+
+files <- list.files(pattern = "historicalmeans_hs")
+historicalmeans_hs <- read_csv(files[1])
+
+files <- list.files(pattern = "historicalmeans_wb")
+historicalmeans_wb <- read_csv(files[1])
 
 fishingareapolygons.dd <- st_read(here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons"))
 
@@ -161,11 +150,11 @@ ui <- fluidPage(
     layout_columns(
       navset_card_tab(
         nav_panel("Hot Spot Suitability, Last 10 Yrs", plotlyOutput(outputId = "HotSpot10yrs")), 
-        nav_panel("Hot Spot Mean Suitability vs Historical Average", plotlyOutput(outputId = "HotSpotVolume"))
+        nav_panel("Hot Spot Mean Suitability vs Historical Average", plotOutput(outputId = "HotSpotVolume"))
       ),
       navset_card_tab(
         nav_panel("Total Bay Suitability, Last 10 Yrs", plotlyOutput(outputId = "WholeBay10yrs")), 
-        nav_panel("Total Bay Suitability vs Historical Average", plotlyOutput(outputId = "WholeBayVolume"))
+        nav_panel("Total Bay Suitability vs Historical Average", plotOutput(outputId = "WholeBayVolume"))
       )
     ),
     
@@ -349,20 +338,23 @@ server <- function(input, output, session) {
              barmode = 'stack')
   })
   
-  output$HotSpotVolume <- renderPlotly({
-    plot_ly()%>%
-      partial_bundle()%>%
-      config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
-      add_trace(x=months,y=maxdatahs,type='scatter',mode='lines',line = list(color = 'white'),showlegend = FALSE) %>%
-      add_trace(x=months,y = mindatahs, type = 'scatter', mode = 'lines',
-                fill = 'tonexty', fillcolor='rgba(0,100,80,0.2)', line = list(color = 'white'),
-                name = '1985-2022 Range')%>%
-      add_trace(x=months,y=percentsuitablehs,type="scatter",mode='lines+markers',name="Percent Suitable Volume 2023",line=list(color="dodgerblue"),marker=list(color="dodgerblue"))%>%
-      add_trace(x=months,y=meandatahs,type="scatter",mode='lines',name="Mean Percent Suitable Volume 1985-2022",line=list(color="darkgreen"))%>%
-      layout(xaxis = list(categoryorder = "array",
-                          categoryarray = months)) %>%
-      layout(legend =list(x=0,y=0.05))%>%
-      layout(showlegend = TRUE, legend = list(font = list(size = 8)))
+  output$HotSpotVolume <- renderPlot({
+    historicmeans_hs_plot <-ggplot(historicalmeans_hs, aes(x=as.factor(monthseq)))+
+      geom_ribbon(mapping=aes(x=monthseq, ymin=mindatahs, ymax=maxdatahs, fill='ribbon'), alpha=0.1)+
+      geom_point(mapping=aes(y=meansuitability, color=timekey))+
+      geom_line(mapping=aes(x=monthseq, y=meansuitability, color=timekey))+
+      theme_classic()+
+      scale_x_discrete(breaks=c(breaks), labels=c(labels))+
+      scale_color_manual(name="Suitability Dataset", values=c("dodgerblue", "darkgreen"), labels=c("Current Year", "Historic Mean (1985-22)"))+
+      scale_fill_manual(name="Suitability Dataset", values=c("darkgreen"), labels=c("Historic Range (1985-22)"))+
+      xlab("Month")+
+      ylab("Suitable Percent of Habitat")+
+      theme(text=element_text(size=14, family=verdana),
+            legend.position=c(0.15, 0.2),
+            legend.text=element_text(size=10),
+            legend.title=element_text(size=11),
+            axis.text.x=element_text(angle=45, hjust=1))
+    historicmeans_hs_plot
   })
   
   output$WholeBay10yrs <- renderPlotly({
@@ -373,22 +365,23 @@ server <- function(input, output, session) {
              barmode = 'stack')
   })
   
-  output$WholeBayVolume <- renderPlotly({
-    thisyearfilledplotlywb <- plot_ly()%>%
-      partial_bundle()%>%
-      config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
-      add_trace(x=months,y=maxdatawb,type='scatter',mode='lines',line = list(color = 'white'),showlegend = FALSE) %>%
-      add_trace(x=months,y = mindatawb, type = 'scatter', mode = 'lines',
-                fill = 'tonexty', fillcolor='rgba(0,100,80,0.2)', line = list(color = 'white'),
-                name = '1985-2022 Range')%>%
-      add_trace(x=months,y=percentsuitablewb,type="scatter",mode='lines+markers',name="Percent Suitable Volume 2023",line=list(color="dodgerblue"),marker=list(color="dodgerblue"))%>%
-      add_trace(x=months,y=meandatawb,type="scatter",mode='lines',name="Mean Percent Suitable Volume 1985-2022",line=list(color="darkgreen"))%>%
-      layout(xaxis = list(categoryorder = "array",
-                          categoryarray = months)) %>%
-      layout(legend =list(x=0,y=0.05))%>%
-      layout(showlegend = TRUE, legend = list(font = list(size = 8)))
-    
-    thisyearfilledplotlywb
+  output$WholeBayVolume <- renderPlot({
+    historicmeans_wb_plot <-ggplot(historicalmeans_wb, aes(x=as.factor(monthseq)))+
+      geom_ribbon(mapping=aes(x=monthseq, ymin=mindatawb, ymax=maxdatawb, fill='ribbon'), alpha=0.1)+
+      geom_point(mapping=aes(y=meansuitability, color=timekey))+
+      geom_line(mapping=aes(x=monthseq, y=meansuitability, color=timekey))+
+      theme_classic()+
+      scale_x_discrete(breaks=c(breaks), labels=c(labels))+
+      scale_color_manual(name="Suitability Dataset", values=c("dodgerblue", "darkgreen"), labels=c("Current Year", "Historic Mean (1985-22)"))+
+      scale_fill_manual(name="Suitability Dataset", values=c("darkgreen"), labels=c("Historic Range (1985-22)"))+
+      xlab("Month")+
+      ylab("Suitable Percent of Habitat")+
+      theme(text=element_text(size=14, family=verdana),
+            legend.position=c(0.15, 0.2),
+            legend.text=element_text(size=10),
+            legend.title=element_text(size=11),
+            axis.text.x=element_text(angle=45, hjust=1))
+    historicmeans_wb_plot
   })
   
   output$WholeBayCrossSection <- renderPlotly({

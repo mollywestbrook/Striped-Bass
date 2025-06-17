@@ -13,11 +13,12 @@ library(ggrepel)
 library(plotly)
 library(leafgl)
 library(htmlwidgets)
+library(ragg)
 
 #Define Variables
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv("BAY844.csv")
+rawcruisedata<-read_csv("BAY888.csv")
 
 ###Ensure the data is confined to a single month, otherwise filter out extraneous dates
 startdate<-min(rawcruisedata$Date)
@@ -42,7 +43,7 @@ monthname <- case_when(monthdate == '1' ~ 'January',
                       monthdate == '12' ~ 'December')
 thisyear<-substr(startdate,1,4)
 
-#And define parameters for Striped Bass:
+#And define habitat parameters for Striped Bass:
 suitabletemp<-82.4
 tolerabletemp<-84.2
 marginaltemp<-86
@@ -61,6 +62,8 @@ suitability_colors <- c(
   "Suitable" = "dodgerblue"
 )
 
+#fonts to match ggplot to plotly
+verdana <- 'verdana'
 #############################################################################################
 
 #Step one: bring in this month's DO and temp files, and format
@@ -182,7 +185,6 @@ fishingareacoords.dd$UTMX <- fishingareacoords_df$UTMX
 fishingareacoords.dd$UTMY <- fishingareacoords_df$UTMY
 fishingareacoords.dd <- left_join(fishingareacoords.dd, wholebaydata, by=c("UTMX","UTMY"), relationship = "many-to-many")
 
-# wholebaydata.sf <- st_as_sf(x=wholebaydata, coords = c("UTMY", "UTMX"), crs = "+proj=utm +zone=10") #NOTE: THIS ONE ISN'T WORKING FOR SOME REASON
 names(mddatathiscruise)[names(mddatathiscruise) == "UTMX"] <- "lat"
 names(mddatathiscruise)[names(mddatathiscruise) == "UTMY"] <- "long"
 mddatathiscruise.sf <- st_as_sf(x=mddatathiscruise, coords = c("lat","long"),crs=32618)
@@ -346,9 +348,9 @@ baymap <- leaflet() %>%
   hideGroup(c("Fishing Areas", "Whole Bay Suitability"))
 baymap
 
-#save the polygons for the app:
+#save the shape files for the app:
 
-#commented for subsequent runs; st_write doesn't overwrite, but uncomment this line on first run
+#commented for subsequent runs; st_write doesn't overwrite, so uncomment this line on first run
 
 #st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "mddatathiscruise_dd_surface.shp", sep="")))
 #st_write(fishingareacoords.dd_surface, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "mddatathiscruise_dd_surface.shp", sep="")))
@@ -426,7 +428,7 @@ historicbaydata <- historicbaydata %>%
     Wtemp>suitabletemp | DO>suitableDO ~ "Suitable",
     TRUE ~ "Unsuitable"))
 
-#summarize the total volume of water
+#summarize the total volume of water and code in our colors
 historicbaydatasummary <- historicbaydata %>%
   group_by(year, Habitat) %>%
   summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
@@ -523,13 +525,6 @@ fwrite(historicbaydata_fishingareas_summary, file = here("Striped-Bass-Habitat-S
 #   ylab("Percent of Habitat")
 
 #interactive plotly
-
-suitability_colors <- c(
-  "Unsuitable" = "black",
-  "Marginal" = "orange",
-  "Tolerable" = "yellow",
-  "Suitable" = "dodgerblue"
-)
 
 historicbaydata_fishingareas_plot <- 
   plot_ly(historicbaydata_fishingareas_summary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
@@ -630,57 +625,87 @@ saveWidget(as_widget(potomacchannelplotly), paste(here("App Figures"),"/PotomicC
 
 ###############################################################################
 
-#Next, we want the percent suitable volume. At the moment, that dataset isn't available to me
+#Historic Percent Suitable Volume
 #Fishing Hot Spots:
 
-percentsuitablehs<-c(100,100,100,100,88.25,78.68,87.54,12.92,48.79
-                   ,81.06,75.02,87.92,NA,NA,NA)
-months<-c("January","February","March","April","May","Early June","Late June","Early July",
-          "Late July","Early August","Late August","September","October","November","December")
+#historic suitability -- based on prev years, no modification needed
+historicalmeans_hotspots<-read_csv("historicalmeans85-22_hotspots.csv")
 
-#This is hard-coded, but ideally I want to take this from a file:
-maxdatahs<-c(100,100,100,100,99.9,91.8,89.1,88.6,85.5,86.3,91.4,97.9,100,100,100)
-mindatahs<-c(98.6,100,99.9,96.3,71.6,67.9,59.5,11.7,2.52,4.31,26.2,77.1,88.4,97,95.3)
-meandatahs<-c(99.9,100,100,99.4,90.8,78.3,76.1,64.5,56.9,61,72.1,87.9,97,99.8,99.8)
+#this: you modify the csv by inserting this month's percent suitable in excel
+#once you've done that, you can load it in.
+percentsuitable_hs <- read_csv("percentsuitable_hotspots_currentyear.csv") 
 
-thisyearfilledplotly<-plot_ly()%>%
-  partial_bundle()%>%
-  config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
-  add_trace(x=months,y=maxdatahs,type='scatter',mode='lines',line = list(color = 'white'),showlegend = FALSE) %>%
-  add_trace(x=months,y = mindatahs, type = 'scatter', mode = 'lines',
-            fill = 'tonexty', fillcolor='rgba(0,100,80,0.2)', line = list(color = 'white'),
-            name = '1985-2022 Range')%>%
-  add_trace(x=months,y=percentsuitablehs,type="scatter",mode='lines+markers',name="Percent Suitable Volume 2023",line=list(color="dodgerblue"),marker=list(color="dodgerblue"))%>%
-  add_trace(x=months,y=meandatahs,type="scatter",mode='lines',name="Mean Percent Suitable Volume 1985-2022",line=list(color="darkgreen"))%>%
-  layout(xaxis = list(categoryorder = "array",
-                      categoryarray = months)) %>%
-  layout(legend =list(x=0,y=0.05))%>%
-  layout(showlegend = TRUE, legend = list(font = list(size = 8)))
-thisyearfilledplotly
+#now we got to organize these a little bit:
+historicalmeans_hs <- full_join(historicalmeans_hotspots, percentsuitable_hs, by='months')
+rm(historicalmeans_hotspots, percentsuitable_hs)
+historicalmeans_hs$monthseq <- as.numeric(rownames(historicalmeans_hs))
+names(historicalmeans_hs)[names(historicalmeans_hs) == "meandatahs"] <- "historic"
+names(historicalmeans_hs)[names(historicalmeans_hs) == "percentsuitablehs"] <- "currentyear"
+historicalmeans_hs <- gather(historicalmeans_hs, key="timekey", value="meansuitability", 4:5)
+labels <- historicalmeans_hs$months
+breaks <- historicalmeans_hs$monthseq
 
-saveWidget(as_widget(thisyearfilledplotly), paste(here("App Figures"),"/MeanPercentSuitableVolume",monthdate,thisyear,".html", sep=""))
+fwrite(historicalmeans_hs, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "historicalmeans_hs.csv", sep="")), row.names=FALSE)
+
+historicmeans_hs_plot <-ggplot(historicalmeans_hs, aes(x=as.factor(monthseq)))+
+  geom_ribbon(mapping=aes(x=monthseq, ymin=mindatahs, ymax=maxdatahs, fill='ribbon'), alpha=0.1)+
+  geom_point(mapping=aes(y=meansuitability, color=timekey))+
+  geom_line(mapping=aes(x=monthseq, y=meansuitability, color=timekey))+
+  theme_classic()+
+  scale_x_discrete(breaks=c(breaks), labels=c(labels))+
+  scale_color_manual(name="Suitability Dataset", values=c("dodgerblue", "darkgreen"), labels=c("Current Year", "Historic Mean (1985-22)"))+
+  scale_fill_manual(name="Suitability Dataset", values=c("darkgreen"), labels=c("Historic Range (1985-22)"))+
+  xlab("Month")+
+  ylab("Suitable Percent of Habitat")+
+  theme(text=element_text(size=14, family=verdana),
+        legend.position=c(0.15, 0.2),
+        legend.text=element_text(size=10),
+        legend.title=element_text(size=11),
+        axis.text.x=element_text(angle=45, hjust=1))
+historicmeans_hs_plot
+ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=here("App Figures"), width = 10, height = 6)
 
 ######
 
 #Entire Bay:
-percentsuitablewb<-c(100,99.98915472,100,99.96483655,94.82371189,89.67849548,92.61107918,59.5016,NA,NA,NA,NA,NA,NA,NA)
-###mean data
-maxdatawb<-c(100.00000,100.00000,100.00000,100.00000,99.94289, 91.80321,89.09262,88.55161,85.45735,86.25828,91.38191,97.89752,100.00000,100.00000,100.00000)
-mindatawb<-c(98.627215,99.964205,99.853254,96.259686,71.554099,67.889627,59.486843,11.739094,2.516686,4.312487,26.203638,77.126050,88.448145,97.011848,95.315226)
-meandatawb<-c(99.93728,99.99834,99.99126,99.44283,90.78836,78.31424,76.06932,64.54837,56.85114,60.98641,72.08090,87.94222,97.02661,99.83884,99.77699)
 
-thisyearfilledplotlywb <- plot_ly()%>%
-  partial_bundle()%>%
-  config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
-  add_trace(x=months,y=maxdatawb,type='scatter',mode='lines',line = list(color = 'white'),showlegend = FALSE) %>%
-  add_trace(x=months,y = mindatawb, type = 'scatter', mode = 'lines',
-            fill = 'tonexty', fillcolor='rgba(0,100,80,0.2)', line = list(color = 'white'),
-            name = '1985-2022 Range')%>%
-  add_trace(x=months,y=percentsuitablewb,type="scatter",mode='lines+markers',name="Percent Suitable Volume 2023",line=list(color="dodgerblue"),marker=list(color="dodgerblue"))%>%
-  add_trace(x=months,y=meandatawb,type="scatter",mode='lines',name="Mean Percent Suitable Volume 1985-2022",line=list(color="darkgreen"))%>%
-  layout(xaxis = list(categoryorder = "array",
-                      categoryarray = months)) %>%
-  layout(legend =list(x=0,y=0.05))%>%
-  layout(showlegend = TRUE, legend = list(font = list(size = 8)))
+#Fishing Hot Spots:
 
-thisyearfilledplotlywb
+#historic suitability -- based on prev years, no modification needed
+historicalmeans_wholebay<-read_csv("historicalmeans85-22_wholebay.csv")
+
+#this: you modify the csv by inserting this month's percent suitable in excel
+#once you've done that, you can load it in.
+percentsuitable_wb <- read_csv("percentsuitable_wholebay_currentyear.csv") 
+
+#now we got to organize these a little bit:
+historicalmeans_wb <- full_join(historicalmeans_wholebay, percentsuitable_wb, by='months')
+rm(historicalmeans_wholebay, percentsuitable_wb)
+historicalmeans_wb$monthseq <- as.numeric(rownames(historicalmeans_wb))
+names(historicalmeans_wb)[names(historicalmeans_wb) == "meandatawb"] <- "historic"
+names(historicalmeans_wb)[names(historicalmeans_wb) == "percentsuitablewb"] <- "currentyear"
+historicalmeans_wb <- gather(historicalmeans_wb, key="timekey", value="meansuitability", 4:5)
+labels <- historicalmeans_wb$months
+breaks <- historicalmeans_wb$monthseq
+
+fwrite(historicalmeans_wb, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "historicalmeans_wb.csv", sep="")), row.names=FALSE)
+
+historicmeans_wb_plot <-ggplot(historicalmeans_wb, aes(x=as.factor(monthseq)))+
+  geom_ribbon(mapping=aes(x=monthseq, ymin=mindatawb, ymax=maxdatawb, fill='ribbon'), alpha=0.1)+
+  geom_point(mapping=aes(y=meansuitability, color=timekey))+
+  geom_line(mapping=aes(x=monthseq, y=meansuitability, color=timekey))+
+  theme_classic()+
+  scale_x_discrete(breaks=c(breaks), labels=c(labels))+
+  scale_color_manual(name="Suitability Dataset", values=c("dodgerblue", "darkgreen"), labels=c("Current Year", "Historic Mean (1985-22)"))+
+  scale_fill_manual(name="Suitability Dataset", values=c("darkgreen"), labels=c("Historic Range (1985-22)"))+
+  xlab("Month")+
+  ylab("Suitable Percent of Habitat")+
+  theme(text=element_text(size=14, family=verdana),
+        legend.position=c(0.15, 0.2),
+        legend.text=element_text(size=10),
+        legend.title=element_text(size=11),
+        axis.text.x=element_text(angle=45, hjust=1))
+historicmeans_wb_plot
+ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=here("App Figures"), width = 10, height = 6)
+
+
