@@ -36,7 +36,6 @@ thiscruise <- "BAY888.csv"
 
 #variables the app needs
 
-
 #What cruise are we working with? Update for this month's
 rawcruisedata<-read_csv(thiscruise)
 
@@ -80,6 +79,8 @@ suitability_colors <- c(
   "Suitable" = "dodgerblue"
 )
 
+verdana <- 'verdana'
+
 #Bring in objects
 
 files <- list.files(pattern = "wholebaysummary")
@@ -117,7 +118,6 @@ fishingareapolygons.dd <- st_read(here("Striped-Bass-Habitat-Suitability", "Fish
 fishingareacoords.dd_surface <- st_read(here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality"))
 
 mddatathiscruise.dd_surface <- st_read(here("Striped-Bass-Habitat-Suitability", "WholeBayQuality"))
-
 
 ############ UI ######################
 
