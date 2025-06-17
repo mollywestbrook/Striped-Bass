@@ -102,8 +102,14 @@ potomacchanneldata <- read_csv(files[1])
 files <- list.files(pattern = "historicalmeans_hs")
 historicalmeans_hs <- read_csv(files[1])
 
+labels <- historicalmeans_hs$months
+breaks <- historicalmeans_hs$monthseq
+
 files <- list.files(pattern = "historicalmeans_wb")
 historicalmeans_wb <- read_csv(files[1])
+
+labels <- historicalmeans_wb$months
+breaks <- historicalmeans_wb$monthseq
 
 fishingareapolygons.dd <- st_read(here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons"))
 
