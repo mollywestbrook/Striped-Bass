@@ -26,6 +26,7 @@ library(plotly)
 library(leafgl)
 library(htmlwidgets)
 library(shinyjs)
+library(ragg)
 
 #### UPDATE THIS WITH CURRENT CRUISE FILE
 
