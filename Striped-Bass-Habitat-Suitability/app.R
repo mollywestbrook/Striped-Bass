@@ -30,7 +30,7 @@ library(ragg)
 
 #### UPDATE THIS WITH CURRENT CRUISE FILE
 
-thiscruise <- "BAY888.csv"
+thiscruise <- "BAY890.csv"
 
 #########################################
 
