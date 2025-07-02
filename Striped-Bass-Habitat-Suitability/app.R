@@ -82,6 +82,12 @@ suitability_colors <- c(
 verdana <- 'verdana'
 
 #city labels for the cross-section plots:
+xrange<-c(4410000,4065000)
+xrangemiles<-xrange*0.000621371
+xrangemiles<-c(2750,2526)
+xrangemiless<-xrangemiles-min(xrangemiles)
+xrange<-xrangemiless/0.000621371
+xrangeoriginal<-c(4410000,4065000)
 citylabels<-NULL
 citylabels$x<-c(355000,323385)
 citylabels$y<-c(4350100,4330000)
