@@ -199,7 +199,7 @@ mddatathiscruise.dd <- mddatathiscruise.dd %>%
     Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
     Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
     Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>suitabletemp | DO>suitableDO ~ "Suitable",
+    Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
     TRUE ~ "Unsuitable")) %>%
   mutate(color = case_when(
     habitat == "Unsuitable" ~ "black",
@@ -212,7 +212,7 @@ fishingareacoords.dd <- fishingareacoords.dd %>%
     Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
     Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
     Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>suitabletemp | DO>suitableDO ~ "Suitable",
+    Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
     TRUE ~ "Unsuitable")) %>%
   mutate(color = case_when(
     habitat == "Unsuitable" ~ "black",
@@ -225,7 +225,7 @@ mddatathiscruise <- mddatathiscruise %>%
     Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
     Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
     Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>suitabletemp | DO>suitableDO ~ "Suitable",
+    Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
     TRUE ~ "Unsuitable")) %>%
   mutate(color = case_when(
     habitat == "Unsuitable" ~ "black",
@@ -573,9 +573,9 @@ mainchanneldata <- mainchanneldata %>%
 fwrite(mainchanneldata, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "mainchanneldata.csv", sep="")), row.names=FALSE)
 
 mainchannelplotly<-plot_ly()%>%
-  config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
+ # config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
   add_trace(x=mainchanneldata$milesY,y=mainchanneldata$Sdepth
-            ,hoverinfo="none"
+            #,hoverinfo="none"
             ,type='scatter',mode='markers'
             ,marker=list(color=mainchanneldata$color))%>%
   layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed"))%>%

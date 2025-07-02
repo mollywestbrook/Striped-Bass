@@ -129,20 +129,9 @@ ui <- fluidPage(
 
     # Application title
     titlePanel(paste("Striped Bass Habitat Suitability for", monthname, thisyear, sep=' ')),
-    
-    card(
-    card_header("Chesapeake Bay Map"),
-    fluidRow(
-      column(8, leafletOutput("BayMap", height = 600)),
-      column(4,
-             selectInput("layer", "Active Layer", choices = c("Fishing Area Suitability", "Whole Bay Suitability"), selected = "Fishing Area Suitability"),
-             conditionalPanel("input.layer == 'Fishing Area Suitability'", plotlyOutput("HotSpotPie")),
-             conditionalPanel("input.layer == 'Whole Bay Suitability'", plotlyOutput("WholeBayPie"))
-            )
-    )
-    ),
-    
+        
     layout_columns(
+    
       card(
         card_header("How To Use This App"),
         p(uiOutput("HowToUse"))
@@ -154,6 +143,26 @@ ui <- fluidPage(
     )
     ),
     
+      card(
+    card_header("Chesapeake Surface Waters Map"),
+    fluidRow(
+      column(8, leafletOutput("BayMap", height = 600)),
+      column(4,
+             selectInput("layer", "Toggle to Change Layer", choices = c("Fishing Area Suitability", "Whole Bay Mean Suitability"), selected = "Fishing Area Suitability"),
+             conditionalPanel("input.layer == 'Fishing Area Suitability'", plotlyOutput("HotSpotPie")),
+             conditionalPanel("input.layer == 'Whole Bay Suitability'", plotlyOutput("WholeBayPie"))
+            )
+    )
+    ),
+    
+    layout_columns(
+      navset_card_tab(
+        nav_panel("Cross-Section of the Main Stem", plotlyOutput(outputId = 'WholeBayCrossSection')), 
+        nav_panel("Cross-Section of the Potomac", plotlyOutput(outputId = 'PotomacCrossSection'))
+      )
+    ),
+
+    
     layout_columns(
       navset_card_tab(
         nav_panel("Hot Spot Suitability, Last 10 Yrs", plotlyOutput(outputId = "HotSpot10yrs")), 
@@ -163,15 +172,8 @@ ui <- fluidPage(
         nav_panel("Total Bay Suitability, Last 10 Yrs", plotlyOutput(outputId = "WholeBay10yrs")), 
         nav_panel("Total Bay Suitability vs Historical Average", plotOutput(outputId = "WholeBayVolume"))
       )
-    ),
-    
-    layout_columns(
-      navset_card_tab(
-        nav_panel("Cross-Section of the Main Stem", plotlyOutput(outputId = 'WholeBayCrossSection')), 
-        nav_panel("Cross-Section of the Potomac", plotlyOutput(outputId = 'PotomacCrossSection'))
-      )
     )
-  )
+)
 
 ############### SERVER ##########################
 
@@ -187,7 +189,7 @@ server <- function(input, output, session) {
     leaflet() %>%
       leaflet() %>%
       addProviderTiles(providers$Esri.NatGeoWorldMap) %>%
-      setView(lng = -76.3, lat = 39.2, zoom = 9) %>%
+      setView(lng = -76.361, lat = 38.5622, zoom = 8) %>%
       addPolygons(
         data = fishingareapolygons.dd, color = "#8373e2", stroke = 0.2, opacity = 0.8,
         label = fishingareapolygons.dd$name, group = "Fishing Areas") %>%
@@ -326,12 +328,12 @@ server <- function(input, output, session) {
     HTML(paste(
       "<p>DNR Links for More Information:</p>",
       "<ul>",
-      "<li> <a href=", "https://eyesonthebay.dnr.maryland.gov/", "> Water Quality Information: Eyes on the Bay</a></li>",
+      "<li> <a href=", "https://eyesonthebay.dnr.maryland.gov/", " target=", "_gap", " rel=", "noreferrer", "> Water Quality Information: Eyes on the Bay</a></li>",
       "</ul>",
       "<p>Striped Bass Habitat Criteria:</p>",
       "<ul>",
-      "<li> <a href=", "https://eyesonthebay.dnr.maryland.gov/eyesonthebay/documents/DevelopmentOfTemperatureAndDOBasedHabitatRequirements.pdf", "> Development of Habitat Conditions</a>, pg 136-144</li>",
-      "<li> <a href=", "https://eyesonthebay.dnr.maryland.gov/eyesonthebay/documents/ImpactsOfClimateChangeOnStripedBassHabitat2023.pdf", "> Climate CHange and Resident Chesapeake Bay Striped Bass Habitat</a>, slides 1-15</li>",
+      "<li> <a href=", "https://eyesonthebay.dnr.maryland.gov/eyesonthebay/documents/DevelopmentOfTemperatureAndDOBasedHabitatRequirements.pdf", " target=", "_gap", " rel=", "noreferrer", "> Development of Habitat Conditions</a>, pg 136-144</li>",
+      "<li> <a href=", "https://eyesonthebay.dnr.maryland.gov/eyesonthebay/documents/ImpactsOfClimateChangeOnStripedBassHabitat2023.pdf", " target=", "_gap", " rel=", "noreferrer", "> Climate Change and Resident Chesapeake Bay Striped Bass Habitat</a>, slides 1-15</li>",
       "</ul>",
       sep=""
     ))
