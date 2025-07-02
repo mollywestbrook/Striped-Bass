@@ -425,7 +425,7 @@ historicbaydata <- historicbaydata %>%
     Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
     Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
     Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>suitabletemp | DO>suitableDO ~ "Suitable",
+    Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
     TRUE ~ "Unsuitable"))
 
 #summarize the total volume of water and code in our colors
@@ -572,12 +572,36 @@ mainchanneldata <- mainchanneldata %>%
 #write out for the app
 fwrite(mainchanneldata, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "mainchanneldata.csv", sep="")), row.names=FALSE)
 
+#hand coding in the city lables...let's see if it works:
+citylabels<-NULL
+citylabels$x<-c(355000,323385)
+citylabels$y<-c(4350100,4330000)
+citylabels$z<-c(5,5)
+citylabels$name<-c("Baltimore","Washington, D.C.")
+citylabels<-as.data.frame(citylabels)
+minmiles <- min(xrangemiles)
+citylabels <- citylabels %>%
+  mutate(milesx = x*0.000621371,
+         milesy = y*0.000621371) %>%
+  mutate(distfrommouth = milesy - minmiles)
+
 mainchannelplotly<-plot_ly()%>%
- # config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
+  config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
   add_trace(x=mainchanneldata$milesY,y=mainchanneldata$Sdepth
-            #,hoverinfo="none"
+            ,hoverinfo="none"
             ,type='scatter',mode='markers'
             ,marker=list(color=mainchanneldata$color))%>%
+  add_annotations(x=citylabels$distfrommouth, #annotations for city labels
+                 y=0,
+                 text=citylabels$name, 
+                 xref = "x",
+                 yref = "y",
+                 showarrow = T,
+                 arrowhead = 0,
+                 arrowsize = 0.5,
+                 ax = 20,
+                 ay = -30,
+                 textposition="top" )%>%
   layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed"))%>%
   layout(yaxis=list(title="Depth (ft)",autorange="reversed"))
 mainchannelplotly
@@ -595,10 +619,15 @@ crosssectionpotomac$keep<-"YES"
 #generating potomac axis labels
 potomacchanneldata<-merge(mddatathiscruise,crosssectionpotomac,by=c("UTMX","UTMY"),allow.cartesian=TRUE)
 potomacchanneldata<-unique(potomacchanneldata)
-potomacchanneldata$milesX<-potomacchanneldata$UTMX*0.000621371
-potomacchanneldata$milesY<-potomacchanneldata$UTMY*0.000621371
-potomacchanneldata$milesY<-potomacchanneldata$milesY-min(xrangemiles)
-potomacchanneldata$milesY<-potomacchanneldata$milesY-min(potomacchanneldata$milesY)
+
+potomacchanneldata <- potomacchanneldata %>%
+  mutate(milesx = UTMX*0.000621371,
+         milesy = UTMY*0.000621371) %>%
+  mutate(distfrommouth = milesy - min(potomacchanneldata$milesy))
+dclabel <- citylabels %>%
+  filter(name == "Washington, D.C.") %>%
+  mutate(distfrompotomac = milesy - min(potomacchanneldata$milesy))
+  
 
 potomacchanneldata <- potomacchanneldata %>%
   mutate(color = case_when(
@@ -609,13 +638,23 @@ potomacchanneldata <- potomacchanneldata %>%
 
 fwrite(potomacchanneldata, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "potomacchanneldata.csv", sep="")), row.names=FALSE)
 
-
 potomacchannelplotly<-plot_ly()%>%
   config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
-  add_trace(x=potomacchanneldata$milesY,y=potomacchanneldata$Sdepth
+  add_trace(x=potomacchanneldata$distfrommouth,y=potomacchanneldata$Sdepth
             ,hoverinfo="none"
             ,type='scatter',mode='markers'
             ,marker=list(color=potomacchanneldata$color))%>%
+  add_annotations(x=dclabel$distfrompotomac, #annotations for city labels
+                  y=0,
+                  text=dclabel$name,
+                  xref = "x",
+                  yref = "y",
+                  showarrow = T,
+                  arrowhead = 0,
+                  arrowsize = 0.5,
+                  ax = 20,
+                  ay = -30,
+                  textposition="top" )%>%
   layout(xaxis=list(title="Distance from mouth of Potomac (miles)",autorange="reversed",zeroline=FALSE))%>%
   layout(yaxis=list(title="Depth (ft)",autorange="reversed")) %>%
   layout(title = 'Potomac River Main Channel Cross Section')

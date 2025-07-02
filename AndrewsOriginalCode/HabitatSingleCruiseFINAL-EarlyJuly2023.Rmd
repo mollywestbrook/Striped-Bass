@@ -274,7 +274,6 @@ citylabels$x<-c(355000,323385)
 citylabels$y<-c(4350100,4330000)
 citylabels$z<-c(5,5)
 citylabels$name<-c("Baltimore","Washington, D.C.")
-
 citylabels<-as.data.frame(citylabels)
 citylabels$name<-as.character(citylabels$name)
 

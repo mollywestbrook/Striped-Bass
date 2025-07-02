@@ -81,6 +81,20 @@ suitability_colors <- c(
 
 verdana <- 'verdana'
 
+#city labels for the cross-section plots:
+citylabels<-NULL
+citylabels$x<-c(355000,323385)
+citylabels$y<-c(4350100,4330000)
+citylabels$z<-c(5,5)
+citylabels$name<-c("Baltimore","Washington, D.C.")
+citylabels<-as.data.frame(citylabels)
+minmiles <- min(xrangemiles)
+citylabels <- citylabels %>%
+  mutate(milesx = x*0.000621371,
+         milesy = y*0.000621371) %>%
+  mutate(distfrommouth = milesy - 2526)
+
+
 #Bring in objects
 
 files <- list.files(pattern = "wholebaysummary")
@@ -130,17 +144,26 @@ ui <- fluidPage(
     # Application title
     titlePanel(paste("Striped Bass Habitat Suitability for", monthname, thisyear, sep=' ')),
         
+    
     layout_columns(
     
-      card(
-        card_header("How To Use This App"),
-        p(uiOutput("HowToUse"))
-      ),
-      navset_card_tab( 
-        nav_panel("Legend", imageOutput('SuitableCriteria')), 
-        nav_panel("Striped Bass Squeeze", imageOutput('StripedBassSqueeze')), 
-        nav_panel("More Info", "DNR Links", uiOutput('DNRLinks'))
-    )
+      accordion(
+        accordion_panel(
+          title = "App Information and Instructions",
+          layout_columns(
+            card(
+              card_header("App Instructions"),
+              p(uiOutput("HowToUse"))
+            ),
+            navset_card_tab( 
+              nav_panel("Legend", imageOutput('SuitableCriteria')), 
+              nav_panel("Striped Bass Squeeze", imageOutput('StripedBassSqueeze')), 
+              nav_panel("More Info", "DNR Links", uiOutput('DNRLinks'))
+            )
+          )
+        ),
+        open=FALSE
+      )
     ),
     
       card(
@@ -301,12 +324,12 @@ server <- function(input, output, session) {
     "<li> The map displays up to three layers: fishing hotspot locations, habitat suitability in fishing hot spots, and habitat suitability across the entire bay.</li>",
     "<li> By default, the fishing hot spot habitat suitability is displayed. </li>",
     "<li> To activate the fishing hot spot locations, hover over the map's layer panel. You can display these over the whole bay data, or just the hot spot data. </li>",
-    "<li> Select which layer you'd like to see by selecting the layer under the 'active layer' tab.</li>",
+    "<li> Select which layer you'd like to see by selecting the layer under the 'Toggle to Change' tab.</li>",
     "<li> You can also filter locations by suitability criteria by selecting the slice of the displayed summary pie chart to display only locations corresponding to that suitability. </li>",
-    "<li> Now, anglers can find the best possible locations for fishing for Bass based on measured data!</li>",
+    "<li> Now, anglers can find the best possible locations for fishing for bass based on measured data!</li>",
     "<li> For legend information on how we define suitable habitat for striped bass, see the legend in the panel to the right. </li>",
-    "<li> Beneath the map, find how this year's data corresponds to historical data.</li>",
-    "<li> Finally, the map displays surface data (>0.5m) only. To find the full channel depth suitability, scroll to the bottom for the main channel and Potomac river depth suitability. </li>",
+    "<li> The map displays surface data (>0.5m) only. Beneath the map find the main bay channel and Potomac river depth suitability.</li>",
+    "<li> Finally, find how this year's data corresponds to historical data at the bottom of the app.</li>",
     "</ul>",
     
     "For more information, see the links to other DNR resources in the panel to the right.",
@@ -316,12 +339,12 @@ server <- function(input, output, session) {
     
   output$SuitableCriteria <- renderImage({
     filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Bass Suitable Criteria.png')))
-    list(src = filename, alt = "Striped Bass Suitability Criteria", width=600)
+    list(src = filename, alt = "Striped Bass Suitability Criteria", width="100%")
   }, deleteFile = FALSE)
 
   output$StripedBassSqueeze <- renderImage({
     filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Striped Bass Squeeze.png')))
-    list(src = filename, alt = "Striped Bass Squeeze", width=600)
+    list(src = filename, alt = "Striped Bass Squeeze", width="100%")
   }, deleteFile = FALSE)
   
   output$DNRLinks <- renderUI({
@@ -400,6 +423,17 @@ server <- function(input, output, session) {
                 ,hoverinfo="none"
                 ,type='scatter',mode='markers'
                 ,marker=list(color=mainchanneldata$color))%>%
+      add_annotations(x=citylabels$distfrommouth, #annotations for city labels
+                      y=0,
+                      text=citylabels$name, 
+                      xref = "x",
+                      yref = "y",
+                      showarrow = T,
+                      arrowhead = 0,
+                      arrowsize = 0.5,
+                      ax = 20,
+                      ay = -30,
+                      textposition="top" )%>%
       layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed"))%>%
       layout(yaxis=list(title="Depth (ft)",autorange="reversed"))
   })
