@@ -81,26 +81,6 @@ suitability_colors <- c(
 
 verdana <- 'verdana'
 
-#city labels for the cross-section plots:
-xrange<-c(4410000,4065000)
-xrangemiles<-xrange*0.000621371
-xrangemiles<-c(2750,2526)
-xrangemiless<-xrangemiles-min(xrangemiles)
-xrange<-xrangemiless/0.000621371
-xrangeoriginal<-c(4410000,4065000)
-citylabels<-NULL
-citylabels$x<-c(355000,323385)
-citylabels$y<-c(4350100,4330000)
-citylabels$z<-c(5,5)
-citylabels$name<-c("Baltimore","Washington, D.C.")
-citylabels<-as.data.frame(citylabels)
-minmiles <- min(xrangemiles)
-citylabels <- citylabels %>%
-  mutate(milesx = x*0.000621371,
-         milesy = y*0.000621371) %>%
-  mutate(distfrommouth = milesy - 2526)
-
-
 #Bring in objects
 
 files <- list.files(pattern = "wholebaysummary")
@@ -139,69 +119,87 @@ fishingareacoords.dd_surface <- st_read(here("Striped-Bass-Habitat-Suitability",
 
 mddatathiscruise.dd_surface <- st_read(here("Striped-Bass-Habitat-Suitability", "WholeBayQuality"))
 
+####
+#for adding the text labels to the cross-sections
+#city labels for the cross-section plots:
+xrange<-c(4410000,4065000)
+xrangemiles<-xrange*0.000621371
+xrangemiles<-c(2750,2526)
+xrangemiless<-xrangemiles-min(xrangemiles)
+xrange<-xrangemiless/0.000621371
+xrangeoriginal<-c(4410000,4065000)
+citylabels<-NULL
+citylabels$x<-c(355000,323385)
+citylabels$y<-c(4350100,4330000)
+citylabels$z<-c(5,5)
+citylabels$name<-c("Baltimore","Washington, D.C.")
+citylabels<-as.data.frame(citylabels)
+minmiles <- min(xrangemiles)
+citylabels <- citylabels %>%
+  mutate(milesx = x*0.000621371,
+         milesy = y*0.000621371) %>%
+  mutate(distfrommouth = milesy - 2526)
+
 ############ UI ######################
 
 #This generates the layout of our app
 #And all of the interactive features of the widgets
 
 ui <- fluidPage(
-    theme = bs_theme(preset = "flatly"),
-
-    # Application title
-    titlePanel(paste("Striped Bass Habitat Suitability for", monthname, thisyear, sep=' ')),
-        
-    
-    layout_columns(
-    
-      accordion(
-        accordion_panel(
-          title = "App Information and Instructions",
-          layout_columns(
-            card(
-              card_header("App Instructions"),
-              p(uiOutput("HowToUse"))
-            ),
-            navset_card_tab( 
-              nav_panel("Legend", imageOutput('SuitableCriteria')), 
-              nav_panel("Striped Bass Squeeze", imageOutput('StripedBassSqueeze')), 
-              nav_panel("More Info", "DNR Links", uiOutput('DNRLinks'))
-            )
+  theme = bs_theme(preset = "flatly"),
+  
+  # Application title
+  titlePanel(paste("Striped Bass Habitat Suitability for", monthname, thisyear, sep=' ')),
+  
+  layout_columns(
+    accordion(
+      accordion_panel(
+        title = "App Information and Instructions",
+        layout_columns(
+          card(
+            card_header("App Instructions"),
+            p(uiOutput("HowToUse"))
+          ),
+          navset_card_tab( 
+            nav_panel("Legend", imageOutput('SuitableCriteria')), 
+            nav_panel("Striped Bass Squeeze", imageOutput('StripedBassSqueeze')), 
+            nav_panel("More Info", "DNR Links", uiOutput('DNRLinks'))
           )
-        ),
-        open=FALSE
-      )
-    ),
-    
-      card(
-    card_header("Chesapeake Surface Waters Map"),
+        )
+      ),
+      open=F
+    )
+  ),
+  
+  card(
+    card_header("Chesapeake Bay Surface Map"),
     fluidRow(
       column(8, leafletOutput("BayMap", height = 600)),
       column(4,
-             selectInput("layer", "Toggle to Change Layer", choices = c("Fishing Area Suitability", "Whole Bay Mean Suitability"), selected = "Fishing Area Suitability"),
+             selectInput("layer", "Toggle to Change Layer", choices = c("Fishing Area Suitability", "Whole Bay Suitability"), selected = "Fishing Area Suitability"),
              conditionalPanel("input.layer == 'Fishing Area Suitability'", plotlyOutput("HotSpotPie")),
              conditionalPanel("input.layer == 'Whole Bay Suitability'", plotlyOutput("WholeBayPie"))
-            )
-    )
-    ),
-    
-    layout_columns(
-      navset_card_tab(
-        nav_panel("Cross-Section of the Main Stem", plotlyOutput(outputId = 'WholeBayCrossSection')), 
-        nav_panel("Cross-Section of the Potomac", plotlyOutput(outputId = 'PotomacCrossSection'))
-      )
-    ),
-
-    
-    layout_columns(
-      navset_card_tab(
-        nav_panel("Hot Spot Suitability, Last 10 Yrs", plotlyOutput(outputId = "HotSpot10yrs")), 
-        nav_panel("Hot Spot Mean Suitability vs Historical Average", plotOutput(outputId = "HotSpotVolume"))
-      ),
-      navset_card_tab(
-        nav_panel("Total Bay Suitability, Last 10 Yrs", plotlyOutput(outputId = "WholeBay10yrs")), 
-        nav_panel("Total Bay Suitability vs Historical Average", plotOutput(outputId = "WholeBayVolume"))
       )
     )
+  ),
+  
+  layout_columns(
+    navset_card_tab(
+      nav_panel("Cross-Section of the Main Stem", plotlyOutput(outputId = 'WholeBayCrossSection')), 
+      nav_panel("Cross-Section of the Potomac", plotlyOutput(outputId = 'PotomacCrossSection'))
+    )
+  ),
+  
+  layout_columns(
+    navset_card_tab(
+      nav_panel("Hot Spot Suitability, Last 10 Yrs", plotlyOutput(outputId = "HotSpot10yrs")), 
+      nav_panel("Hot Spot Mean Suitability vs Historical Average", plotOutput(outputId = "HotSpotVolume"))
+    ),
+    navset_card_tab(
+      nav_panel("Total Bay Suitability, Last 10 Yrs", plotlyOutput(outputId = "WholeBay10yrs")), 
+      nav_panel("Total Bay Mean Suitability vs Historical Average", plotOutput(outputId = "WholeBayVolume"))
+    )
+  )
 )
 
 ############### SERVER ##########################
@@ -218,7 +216,7 @@ server <- function(input, output, session) {
     leaflet() %>%
       leaflet() %>%
       addProviderTiles(providers$Esri.NatGeoWorldMap) %>%
-      setView(lng = -76.361, lat = 38.5622, zoom = 8) %>%
+      setView(lng = -76.3, lat = 39.2, zoom = 9) %>%
       addPolygons(
         data = fishingareapolygons.dd, color = "#8373e2", stroke = 0.2, opacity = 0.8,
         label = fishingareapolygons.dd$name, group = "Fishing Areas") %>%
@@ -235,14 +233,14 @@ server <- function(input, output, session) {
   #this makes our hot spot pie chart  
   output$HotSpotPie <- renderPlotly({
     p <- plot_ly(fishinghotspotssummary, 
-                          labels = ~habitat, 
-                          values = ~percent, 
-                          type = 'pie', 
-                          source = 'HotSpotPie', 
-                          textposition = 'outside', 
-                          textinfo = 'label+percent', 
-                          customdata = ~color,
-                          marker = list(colors = fishinghotspotssummary$color)) %>%
+                 labels = ~habitat, 
+                 values = ~percent, 
+                 type = 'pie', 
+                 source = 'HotSpotPie', 
+                 textposition = 'outside', 
+                 textinfo = 'label+percent', 
+                 customdata = ~color,
+                 marker = list(colors = fishinghotspotssummary$color)) %>%
       layout(title = 'Fishing Hotspots Habitat Suitability',
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
@@ -253,14 +251,14 @@ server <- function(input, output, session) {
   #this makes our whole bay pie chart
   output$WholeBayPie <- renderPlotly({
     p <- plot_ly(wholebaysurfacesummary, 
-                           labels = ~habitat, 
-                           values = ~percent, 
-                           type = 'pie',
-                           textposition = 'outside',
-                           source = 'WholeBayPie', 
-                           textinfo = 'label+percent',
-                           customdata = ~color,
-                           marker = list(colors = wholebaysurfacesummary$color)) %>%
+                 labels = ~habitat, 
+                 values = ~percent, 
+                 type = 'pie',
+                 textposition = 'outside',
+                 source = 'WholeBayPie', 
+                 textinfo = 'label+percent',
+                 customdata = ~color,
+                 marker = list(colors = wholebaysurfacesummary$color)) %>%
       layout(title = 'Whole Bay Habitat Suitability',
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
@@ -299,58 +297,58 @@ server <- function(input, output, session) {
     leafletProxy("BayMap") %>%
       clearGroup("Fishing Area Suitability") %>%
       clearGroup("Whole Bay Suitability")
-      
-        if (rv$active_layer == "Fishing Area Suitability") {
-          pts <- fishingareacoords.dd_surface
-          if (!is.null(rv$selected_color)) {
-            pts <- pts %>% filter(color == rv$selected_color)
-          }
-          leafletProxy("BayMap") %>%
-            addCircles(data = pts, color = ~color, group = "Fishing Area Suitability", label = ~habitat)
-        } else if (rv$active_layer == "Whole Bay Suitability") {
-          pts <- mddatathiscruise.dd_surface
-          if (!is.null(rv$selected_color)) {
-            pts <- pts %>% filter(color == rv$selected_color)
-          }
-          leafletProxy("BayMap") %>%
-            addCircles(., data = pts, color = ~color, group = "Whole Bay Suitability", label = ~habitat)
-        }
-
+    
+    if (rv$active_layer == "Fishing Area Suitability") {
+      pts <- fishingareacoords.dd_surface
+      if (!is.null(rv$selected_color)) {
+        pts <- pts %>% filter(color == rv$selected_color)
+      }
+      leafletProxy("BayMap") %>%
+        addCircles(data = pts, color = ~color, group = "Fishing Area Suitability", label = ~habitat)
+    } else if (rv$active_layer == "Whole Bay Suitability") {
+      pts <- mddatathiscruise.dd_surface
+      if (!is.null(rv$selected_color)) {
+        pts <- pts %>% filter(color == rv$selected_color)
+      }
+      leafletProxy("BayMap") %>%
+        addCircles(., data = pts, color = ~color, group = "Whole Bay Suitability", label = ~habitat)
+    }
+    
   })
   
   output$HowToUse <- renderUI({
     HTML(paste(
-    "<p>This dashboard provides habitat suitability information for Striped Bass.</p>",
-    
-    "<p>To understand how Bass habitat may change over the year, select 'Striped Bass Squeeze' in the panel to the right. </p>",
-    
-    "<p> The following list walks through each panel of information to best predict where you may find Striped Bass at this time of the year. </p>",
-    
-    "<ul>",
-    "<li> The map displays up to three layers: fishing hotspot locations, habitat suitability in fishing hot spots, and habitat suitability across the entire bay.</li>",
-    "<li> By default, the fishing hot spot habitat suitability is displayed. </li>",
-    "<li> To activate the fishing hot spot locations, hover over the map's layer panel. You can display these over the whole bay data, or just the hot spot data. </li>",
-    "<li> Select which layer you'd like to see by selecting the layer under the 'Toggle to Change' tab.</li>",
-    "<li> You can also filter locations by suitability criteria by selecting the slice of the displayed summary pie chart to display only locations corresponding to that suitability. </li>",
-    "<li> Now, anglers can find the best possible locations for fishing for bass based on measured data!</li>",
-    "<li> For legend information on how we define suitable habitat for striped bass, see the legend in the panel to the right. </li>",
-    "<li> The map displays surface data (>0.5m) only. Beneath the map find the main bay channel and Potomac river depth suitability.</li>",
-    "<li> Finally, find how this year's data corresponds to historical data at the bottom of the app.</li>",
-    "</ul>",
-    
-    "For more information, see the links to other DNR resources in the panel to the right.",
-    sep=""
+      "<p>This dashboard provides habitat suitability information for Striped Bass.</p>",
+      
+      "<p>To understand how Bass habitat may change over the year, select 'Striped Bass Squeeze' in the panel to the right. </p>",
+      
+      "<p> The following list walks through each panel of information to best predict where you may find Striped Bass at this time of the year. </p>",
+      
+      "<ul>",
+      "<li> The map displays up to three layers: fishing hotspot locations, habitat suitability in fishing hot spots, and habitat suitability across the entire bay.</li>",
+      "<li> By default, the fishing hot spot habitat suitability is displayed. </li>",
+      "<li> To activate the fishing hot spot locations, hover over the map's layer panel. You can display these over the whole bay data, or just the hot spot data. </li>",
+      "<li> Select which layer you'd like to see by selecting the layer under the 'Toggle to Change' tab.</li>",
+      "<li> You can also filter locations by suitability criteria by selecting the slice of the displayed summary pie chart to display only locations corresponding to that suitability. </li>",
+      "<li> Now, anglers can find the best possible locations for fishing for bass based on measured data!</li>",
+      "<li> For legend information on how we define suitable habitat for striped bass, see the legend in the panel to the right. </li>",
+      "<li> The map displays surface data (>0.5m) only. Beneath the map find the main bay channel and Potomac river depth suitability.</li>",
+      "<li> Finally, find how this year's data corresponds to historical data at the bottom of the app.</li>",
+      "</ul>",
+      
+      "For more information, see the links to other DNR resources in the panel to the right.",
+      sep=""
     ))
   })
-    
+  
   output$SuitableCriteria <- renderImage({
     filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Bass Suitable Criteria.png')))
-    list(src = filename, alt = "Striped Bass Suitability Criteria", width="100%")
+    list(src = filename, alt = "Striped Bass Suitability Criteria", width=600)
   }, deleteFile = FALSE)
-
+  
   output$StripedBassSqueeze <- renderImage({
     filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Striped Bass Squeeze.png')))
-    list(src = filename, alt = "Striped Bass Squeeze", width="100%")
+    list(src = filename, alt = "Striped Bass Squeeze", width=600)
   }, deleteFile = FALSE)
   
   output$DNRLinks <- renderUI({
@@ -367,7 +365,7 @@ server <- function(input, output, session) {
       sep=""
     ))
   })
-
+  
   output$HotSpot10yrs <- renderPlotly({
     plot_ly(historicbaydata_fishingareas_summary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
             type = 'bar') %>%
@@ -383,8 +381,8 @@ server <- function(input, output, session) {
       geom_line(mapping=aes(x=monthseq, y=meansuitability, color=timekey))+
       theme_classic()+
       scale_x_discrete(breaks=c(breaks), labels=c(labels))+
-      scale_color_manual(name="Suitability Dataset", values=c("dodgerblue", "darkgreen"), labels=c("Current Year", "Historic Mean (1985-22)"))+
-      scale_fill_manual(name="Suitability Dataset", values=c("darkgreen"), labels=c("Historic Range (1985-22)"))+
+      scale_color_manual(name="Suitability Dataset", values=c("dodgerblue", "darkgreen"), labels=c("Current Year", "Historic Mean (1985-24)"))+
+      scale_fill_manual(name="Suitability Dataset", values=c("darkgreen"), labels=c("Historic Range (1985-24)"))+
       xlab("Month")+
       ylab("Suitable Percent of Habitat")+
       theme(text=element_text(size=14, family=verdana),
@@ -410,8 +408,8 @@ server <- function(input, output, session) {
       geom_line(mapping=aes(x=monthseq, y=meansuitability, color=timekey))+
       theme_classic()+
       scale_x_discrete(breaks=c(breaks), labels=c(labels))+
-      scale_color_manual(name="Suitability Dataset", values=c("dodgerblue", "darkgreen"), labels=c("Current Year", "Historic Mean (1985-22)"))+
-      scale_fill_manual(name="Suitability Dataset", values=c("darkgreen"), labels=c("Historic Range (1985-22)"))+
+      scale_color_manual(name="Suitability Dataset", values=c("dodgerblue", "darkgreen"), labels=c("Current Year", "Historic Mean (1985-24)"))+
+      scale_fill_manual(name="Suitability Dataset", values=c("darkgreen"), labels=c("Historic Range (1985-24)"))+
       xlab("Month")+
       ylab("Suitable Percent of Habitat")+
       theme(text=element_text(size=14, family=verdana),
@@ -431,7 +429,7 @@ server <- function(input, output, session) {
                 ,marker=list(color=mainchanneldata$color))%>%
       add_annotations(x=citylabels$distfrommouth, #annotations for city labels
                       y=0,
-                      text=citylabels$name, 
+                      text=citylabels$name,
                       xref = "x",
                       yref = "y",
                       showarrow = T,
