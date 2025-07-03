@@ -1,4 +1,5 @@
 year,Habitat,volume,percent,color,level
+2015,Unsuitable,1.885495,4.14,black,0
 2016,Unsuitable,2.28571,5.02,black,0
 2017,Unsuitable,4.7804375,10.5,black,0
 2018,Unsuitable,5.315375,11.68,black,0
@@ -6,7 +7,9 @@ year,Habitat,volume,percent,color,level
 2021,Unsuitable,1.331305,2.93,black,0
 2022,Unsuitable,3.247225,7.13,black,0
 2023,Unsuitable,1.0790625,2.37,black,0
+2024,Unsuitable,5.2881825,13.86,black,0
 2025,Unsuitable,3.2311875,8.47,black,0
+2015,Marginal,1.522445,3.35,orange,1
 2016,Marginal,2.0369725,4.48,orange,1
 2017,Marginal,2.6684975,5.86,orange,1
 2018,Marginal,2.0245525,4.45,orange,1
@@ -14,7 +17,9 @@ year,Habitat,volume,percent,color,level
 2021,Marginal,0.9912775,2.18,orange,1
 2022,Marginal,1.7559375,3.86,orange,1
 2023,Marginal,1.54375,3.39,orange,1
+2024,Marginal,1.4840575,3.89,orange,1
 2025,Marginal,1.5116875,3.96,orange,1
+2015,Tolerable,1.623325,3.57,yellow,2
 2016,Tolerable,2.5528175,5.61,yellow,2
 2017,Tolerable,3.7374025,8.21,yellow,2
 2018,Tolerable,2.517135,5.53,yellow,2
@@ -22,7 +27,9 @@ year,Habitat,volume,percent,color,level
 2021,Tolerable,1.407975,3.09,yellow,2
 2022,Tolerable,5.2030225,11.43,yellow,2
 2023,Tolerable,2.074345,4.56,yellow,2
+2024,Tolerable,1.35493,3.55,yellow,2
 2025,Tolerable,1.8168475,4.76,yellow,2
+2015,Suitable,40.463735,88.94,dodgerblue,3
 2016,Suitable,38.6186175,84.89,dodgerblue,3
 2017,Suitable,34.33795,75.43,dodgerblue,3
 2018,Suitable,35.6630425,78.35,dodgerblue,3
@@ -30,4 +37,5 @@ year,Habitat,volume,percent,color,level
 2021,Suitable,41.78186,91.8,dodgerblue,3
 2022,Suitable,35.31579,77.58,dodgerblue,3
 2023,Suitable,40.8113,89.68,dodgerblue,3
+2024,Suitable,30.0149275,78.69,dodgerblue,3
 2025,Suitable,31.5750075,82.8,dodgerblue,3
