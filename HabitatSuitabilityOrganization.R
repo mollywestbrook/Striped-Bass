@@ -672,7 +672,7 @@ saveWidget(as_widget(potomacchannelplotly), paste(here("App Figures"),"/PotomicC
 #Fishing Hot Spots:
 
 #historic suitability -- based on prev years, no modification needed
-historicalmeans_hotspots<-read_csv("historicalmeans85-22_hotspots.csv")
+historicalmeans_hotspots<-read_csv("historicalmeans85-24_hotspots.csv")
 
 #this: you modify the csv by inserting this month's percent suitable in excel
 #once you've done that, you can load it in.
@@ -715,7 +715,7 @@ ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=her
 #Fishing Hot Spots:
 
 #historic suitability -- based on prev years, no modification needed
-historicalmeans_wholebay<-read_csv("historicalmeans85-22_wholebay.csv")
+historicalmeans_wholebay<-read_csv("historicalmeans85-24_wholebay.csv")
 
 #this: you modify the csv by inserting this month's percent suitable in excel
 #once you've done that, you can load it in.

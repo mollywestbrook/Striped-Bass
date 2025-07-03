@@ -445,10 +445,21 @@ server <- function(input, output, session) {
   output$PotomacCrossSection <- renderPlotly({
     plot_ly()%>%
       config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
-      add_trace(x=potomacchanneldata$milesY,y=potomacchanneldata$Sdepth
+      add_trace(x=potomacchanneldata$distfrommouth,y=potomacchanneldata$Sdepth
                 ,hoverinfo="none"
                 ,type='scatter',mode='markers'
                 ,marker=list(color=potomacchanneldata$color))%>%
+      # add_annotations(x=dclabel$distfrompotomac, #annotations for city labels
+      #                 y=0,
+      #                 text=dclabel$name,
+      #                 xref = "x",
+      #                 yref = "y",
+      #                 showarrow = T,
+      #                 arrowhead = 0,
+      #                 arrowsize = 0.5,
+      #                 ax = 20,
+      #                 ay = -30,
+      #                 textposition="top" )%>%
       layout(xaxis=list(title="Distance from mouth of Potomac (miles)",autorange="reversed",zeroline=FALSE))%>%
       layout(yaxis=list(title="Depth (ft)",autorange="reversed")) %>%
       layout(title = 'Potomac River Main Channel Cross Section')
