@@ -81,24 +81,25 @@ suitability_colors <- c(
 
 verdana <- 'verdana'
 
-# #city labels for the cross-section plots:
-# xrange<-c(4410000,4065000)
-# xrangemiles<-xrange*0.000621371
-# xrangemiles<-c(2750,2526)
-# xrangemiless<-xrangemiles-min(xrangemiles)
-# xrange<-xrangemiless/0.000621371
-# xrangeoriginal<-c(4410000,4065000)
-# citylabels<-NULL
-# citylabels$x<-c(355000,323385)
-# citylabels$y<-c(4350100,4330000)
-# citylabels$z<-c(5,5)
-# citylabels$name<-c("Baltimore","Washington, D.C.")
-# citylabels<-as.data.frame(citylabels)
-# minmiles <- min(xrangemiles)
-# citylabels <- citylabels %>%
-#   mutate(milesx = x*0.000621371,
-#          milesy = y*0.000621371) %>%
-#   mutate(distfrommouth = milesy - 2526)
+#city labels for the cross-section plots:
+xrange<-c(4410000,4065000)
+xrangemiles<-xrange*0.000621371
+xrangemiles<-c(2750,2526)
+xrangemiless<-xrangemiles-min(xrangemiles)
+xrange<-xrangemiless/0.000621371
+xrangeoriginal<-c(4410000,4065000)
+citylabels<-NULL
+citylabels$x<-c(355000,323385)
+citylabels$y<-c(4350100,4330000)
+citylabels$z<-c(5,5)
+citylabels$name<-c("Baltimore","Washington, D.C.")
+citylabels<-as.data.frame(citylabels)
+minmiles <- min(xrangemiles)
+citylabels <- citylabels %>%
+  mutate(milesx = x*0.000621371,
+         milesy = y*0.000621371)
+citylabels <- citylabels %>%
+  mutate(distfrommouth = milesy - 2526)
 
 
 #Bring in objects
@@ -138,27 +139,6 @@ fishingareapolygons.dd <- st_read(here("Striped-Bass-Habitat-Suitability", "Fish
 fishingareacoords.dd_surface <- st_read(here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality"))
 
 mddatathiscruise.dd_surface <- st_read(here("Striped-Bass-Habitat-Suitability", "WholeBayQuality"))
-
-####
-#for adding the text labels to the cross-sections
-#city labels for the cross-section plots:
-xrange<-c(4410000,4065000)
-xrangemiles<-xrange*0.000621371
-xrangemiles<-c(2750,2526)
-xrangemiless<-xrangemiles-min(xrangemiles)
-xrange<-xrangemiless/0.000621371
-xrangeoriginal<-c(4410000,4065000)
-citylabels<-NULL
-citylabels$x<-c(355000,323385)
-citylabels$y<-c(4350100,4330000)
-citylabels$z<-c(5,5)
-citylabels$name<-c("Baltimore","Washington, D.C.")
-citylabels<-as.data.frame(citylabels)
-minmiles <- min(xrangemiles)
-citylabels <- citylabels %>%
-  mutate(milesx = x*0.000621371,
-         milesy = y*0.000621371) %>%
-  mutate(distfrommouth = milesy - 2526)
 
 ############ UI ######################
 
@@ -217,7 +197,6 @@ ui <- fluidPage(
     ),
     navset_card_tab(
       nav_panel("Total Bay Suitability, Last 10 Yrs", plotlyOutput(outputId = "WholeBay10yrs")), 
-      nav_panel("Total Bay Suitability vs Historical Average", plotOutput(outputId = "WholeBayVolume")),
       nav_panel("Total Bay Mean Suitability vs Historical Average", plotOutput(outputId = "WholeBayVolume"))
     )
   )
@@ -364,12 +343,12 @@ server <- function(input, output, session) {
   
   output$SuitableCriteria <- renderImage({
     filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Bass Suitable Criteria.png')))
-    list(src = filename, alt = "Striped Bass Suitability Criteria", width=600)
+    list(src = filename, alt = "Striped Bass Suitability Criteria", width="100%")
   }, deleteFile = FALSE)
   
   output$StripedBassSqueeze <- renderImage({
     filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Striped Bass Squeeze.png')))
-    list(src = filename, alt = "Striped Bass Squeeze", width=600)
+    list(src = filename, alt = "Striped Bass Squeeze", width="100%")
   }, deleteFile = FALSE)
   
   output$DNRLinks <- renderUI({

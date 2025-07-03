@@ -625,7 +625,8 @@ potomacchanneldata<-unique(potomacchanneldata)
 
 potomacchanneldata <- potomacchanneldata %>%
   mutate(milesx = UTMX*0.000621371,
-         milesy = UTMY*0.000621371) %>%
+         milesy = UTMY*0.000621371)
+potomacchanneldata <- potomacchanneldata %>%
   mutate(distfrommouth = milesy - min(potomacchanneldata$milesy, na.rm=T))
 dclabel <- citylabels %>%
   filter(name == "Washington, D.C.") %>%
@@ -647,17 +648,17 @@ potomacchannelplotly<-plot_ly()%>%
             ,hoverinfo="none"
             ,type='scatter',mode='markers'
             ,marker=list(color=potomacchanneldata$color))%>%
-  add_annotations(x=dclabel$distfrompotomac, #annotations for city labels
-                  y=0,
-                  text=dclabel$name,
-                  xref = "x",
-                  yref = "y",
-                  showarrow = T,
-                  arrowhead = 0,
-                  arrowsize = 0.5,
-                  ax = 20,
-                  ay = -30,
-                  textposition="top" )%>%
+  # add_annotations(x=dclabel$distfrompotomac, #annotations for city labels
+  #                 y=0,
+  #                 text=dclabel$name,
+  #                 xref = "x",
+  #                 yref = "y",
+  #                 showarrow = T,
+  #                 arrowhead = 0,
+  #                 arrowsize = 0.5,
+  #                 ax = 20,
+  #                 ay = -30,
+  #                 textposition="top" )%>%
   layout(xaxis=list(title="Distance from mouth of Potomac (miles)",autorange="reversed",zeroline=FALSE))%>%
   layout(yaxis=list(title="Depth (ft)",autorange="reversed")) %>%
   layout(title = 'Potomac River Main Channel Cross Section')
