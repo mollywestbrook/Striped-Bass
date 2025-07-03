@@ -285,13 +285,16 @@ fetcheveryyearsdata <- function (currentyear) {
         select("Segment", "UTM_X","UTM_Y", "Sdepth","volume_m","wtemp")
       
       #This formats the new transposed data into one dataset
-      historicwholebaydata <- data.frame(DOt$Segment, 
-                                         DOt$UTM_X, 
-                                         DOt$UTM_Y, 
-                                         DOt$Sdepth, 
-                                         DOt$volume_m, 
-                                         DOt$DO, 
-                                         wtempt$wtemp)
+      #getting rid of this; we've run into a few cases where the df are slightly diff lengths
+      #CHECK TO MAKE SURE EVERY FILE MATCHES FIRST
+      # historicwholebaydata <- data.frame(DOt$Segment, 
+      #                                    DOt$UTM_X, 
+      #                                    DOt$UTM_Y, 
+      #                                    DOt$Sdepth, 
+      #                                    DOt$volume_m, 
+      #                                    DOt$DO, 
+      #                                    wtempt$wtemp)
+      historicwholebaydata <- full_join(DOt, wtempt, by=c("Segment", "UTM_X", "UTM_Y", "Sdepth", "volume_m"))
       historicwholebaydata <- historicwholebaydata %>%
         mutate(year = rep(currentyear, nrow(historicwholebaydata)))
     },error = \(e) {
