@@ -81,7 +81,6 @@ suitability_colors <- c(
 
 verdana <- 'verdana'
 
-<<<<<<< HEAD
 # #city labels for the cross-section plots:
 # xrange<-c(4410000,4065000)
 # xrangemiles<-xrange*0.000621371
@@ -102,8 +101,6 @@ verdana <- 'verdana'
 #   mutate(distfrommouth = milesy - 2526)
 
 
-=======
->>>>>>> tmp
 #Bring in objects
 
 files <- list.files(pattern = "wholebaysummary")
@@ -174,13 +171,7 @@ ui <- fluidPage(
   # Application title
   titlePanel(paste("Striped Bass Habitat Suitability for", monthname, thisyear, sep=' ')),
   
-<<<<<<< HEAD
-  
   layout_columns(
-    
-=======
-  layout_columns(
->>>>>>> tmp
     accordion(
       accordion_panel(
         title = "App Information and Instructions",
@@ -196,28 +187,16 @@ ui <- fluidPage(
           )
         )
       ),
-<<<<<<< HEAD
-      open=FALSE
-=======
       open=F
->>>>>>> tmp
     )
   ),
   
   card(
-<<<<<<< HEAD
-    card_header("Chesapeake Surface Waters Map"),
-    fluidRow(
-      column(8, leafletOutput("BayMap", height = 600)),
-      column(4,
-             selectInput("layer", "Active Layer", choices = c("Fishing Area Suitability", "Whole Bay Mean Suitability"), selected = "Fishing Area Suitability"),
-=======
     card_header("Chesapeake Bay Surface Map"),
     fluidRow(
       column(8, leafletOutput("BayMap", height = 600)),
       column(4,
              selectInput("layer", "Toggle to Change Layer", choices = c("Fishing Area Suitability", "Whole Bay Suitability"), selected = "Fishing Area Suitability"),
->>>>>>> tmp
              conditionalPanel("input.layer == 'Fishing Area Suitability'", plotlyOutput("HotSpotPie")),
              conditionalPanel("input.layer == 'Whole Bay Suitability'", plotlyOutput("WholeBayPie"))
       )
@@ -231,10 +210,6 @@ ui <- fluidPage(
     )
   ),
   
-<<<<<<< HEAD
-  
-=======
->>>>>>> tmp
   layout_columns(
     navset_card_tab(
       nav_panel("Hot Spot Suitability, Last 10 Yrs", plotlyOutput(outputId = "HotSpot10yrs")), 
@@ -242,11 +217,8 @@ ui <- fluidPage(
     ),
     navset_card_tab(
       nav_panel("Total Bay Suitability, Last 10 Yrs", plotlyOutput(outputId = "WholeBay10yrs")), 
-<<<<<<< HEAD
-      nav_panel("Total Bay Suitability vs Historical Average", plotOutput(outputId = "WholeBayVolume"))
-=======
+      nav_panel("Total Bay Suitability vs Historical Average", plotOutput(outputId = "WholeBayVolume")),
       nav_panel("Total Bay Mean Suitability vs Historical Average", plotOutput(outputId = "WholeBayVolume"))
->>>>>>> tmp
     )
   )
 )
@@ -476,19 +448,6 @@ server <- function(input, output, session) {
                 ,hoverinfo="none"
                 ,type='scatter',mode='markers'
                 ,marker=list(color=mainchanneldata$color))%>%
-<<<<<<< HEAD
-      # add_annotations(x=citylabels$distfrommouth, #annotations for city labels
-      #                 y=0,
-      #                 text=citylabels$name, 
-      #                 xref = "x",
-      #                 yref = "y",
-      #                 showarrow = T,
-      #                 arrowhead = 0,
-      #                 arrowsize = 0.5,
-      #                 ax = 20,
-      #                 ay = -30,
-      #                 textposition="top" )%>%
-=======
       add_annotations(x=citylabels$distfrommouth, #annotations for city labels
                       y=0,
                       text=citylabels$name,
@@ -500,7 +459,6 @@ server <- function(input, output, session) {
                       ax = 20,
                       ay = -30,
                       textposition="top" )%>%
->>>>>>> tmp
       layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed"))%>%
       layout(yaxis=list(title="Depth (ft)",autorange="reversed"))
   })
