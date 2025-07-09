@@ -187,4 +187,10 @@ historicalmeans_wholebay <- data.frame(months, maxdatawb, mindatawb, meandatawb)
 
 fwrite(historicalmeans_wholebay, "historicalmeans85-22_wholebay.csv", row.names=FALSE)
 
+#########################################################################################
 
+#checking to make sure the gaps in potomac are real
+
+potomaccheck <- wholebaydata %>%
+  filter(Segment %in% c("POTIF", "POTOH")) %>%
+  arrange(UTMY)

@@ -81,31 +81,10 @@ suitability_colors <- c(
 
 verdana <- 'verdana'
 
-#city labels for the cross-section plots:
-xrange<-c(4410000,4065000)
-xrangemiles<-xrange*0.000621371
-xrangemiles<-c(2750,2526)
-xrangemiless<-xrangemiles-min(xrangemiles)
-xrange<-xrangemiless/0.000621371
-xrangeoriginal<-c(4410000,4065000)
-citylabels<-NULL
-citylabels$x<-c(355000,323385)
-citylabels$y<-c(4350100,4330000)
-citylabels$z<-c(5,5)
-citylabels$name<-c("Baltimore","Washington, D.C.")
-citylabels<-as.data.frame(citylabels)
-minmiles <- min(xrangemiles)
-citylabels <- citylabels %>%
-  mutate(milesx = x*0.000621371,
-         milesy = y*0.000621371)
-citylabels <- citylabels %>%
-  mutate(distfrommouth = milesy - 2526)
-
-
 #Bring in objects
 
 files <- list.files(pattern = "wholebaysummary")
-wholebaysurfacesummary <- read_csv(files[1])
+wholebaybottomsummary <- read_csv(files[1])
 
 files <- list.files(pattern = "fishinghotspotsummary")
 fishinghotspotssummary <- read_csv(files[1])
@@ -113,14 +92,24 @@ fishinghotspotssummary <- read_csv(files[1])
 files <- list.files(pattern = "historicbaydatafishingareassummary")
 historicbaydata_fishingareas_summary <- read_csv(files[1])
 
+historicbaydata_fishingareas_summary$Habitat <- factor(historicbaydata_fishingareas_summary$Habitat, levels = c("Suitable", "Tolerable", "Marginal", "Unsuitable"))
+
 files <- list.files(pattern = "historicbaydatasummary")
 historicbaydata_summary <- read_csv(files[1])
+
+historicbaydata_summary$Habitat <- factor(historicbaydata_summary$Habitat, levels = c("Suitable", "Tolerable", "Marginal", "Unsuitable"))
 
 files <- list.files(pattern = "mainchanneldata")
 mainchanneldata <- read_csv(files[1])
 
+files <- list.files(pattern = "labels_mainstem")
+labels_mainstem <- read_csv(files[1])
+
 files <- list.files(pattern = "potomacchanneldata")
 potomacchanneldata <- read_csv(files[1])
+
+files <- list.files(pattern = "labels_potomac")
+labels_potomac <- read_csv(files[1])
 
 files <- list.files(pattern = "historicalmeans_hs")
 historicalmeans_hs <- read_csv(files[1])
@@ -136,9 +125,13 @@ breaks <- historicalmeans_wb$monthseq
 
 fishingareapolygons.dd <- st_read(here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons"))
 
-fishingareacoords.dd_surface <- st_read(here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality"))
+fishingareacoords.dd_bottom <- st_read(here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality"))
 
-mddatathiscruise.dd_surface <- st_read(here("Striped-Bass-Habitat-Suitability", "WholeBayQuality"))
+mddatathiscruise.dd_bottom <- st_read(here("Striped-Bass-Habitat-Suitability", "WholeBayQuality"))
+
+#one more quick fix for the labels for the map:
+
+#fishingpointlabels <- paste(fishingareacoords.dd_surface$name, fishingareacoords.dd_surface$Sdepth, "ft", sep=" ")
 
 ############ UI ######################
 
@@ -147,6 +140,14 @@ mddatathiscruise.dd_surface <- st_read(here("Striped-Bass-Habitat-Suitability", 
 
 ui <- fluidPage(
   theme = bs_theme(preset = "flatly"),
+  tags$style(HTML("
+    .accordion {
+      --bs-accordion-bg: #d1e6fc
+    }
+    .accordion-item {
+      --bs-accordion-bg: #fcfcfc
+    }
+                  ")),
   
   # Application title
   titlePanel(paste("Striped Bass Habitat Suitability for", monthname, thisyear, sep=' ')),
@@ -172,7 +173,7 @@ ui <- fluidPage(
   ),
   
   card(
-    card_header("Chesapeake Bay Surface Map"),
+    card_header("Chesapeake Bay Bottom Map"),
     fluidRow(
       column(8, leafletOutput("BayMap", height = 600)),
       column(4,
@@ -211,25 +212,6 @@ server <- function(input, output, session) {
   #make the map reactive
   rv <- reactiveValues(selected_color = NULL, active_layer = "Fishing Area Suitability")
   
-  #this generates our map
-  output$BayMap <- renderLeaflet({
-    leaflet() %>%
-      leaflet() %>%
-      addProviderTiles(providers$Esri.NatGeoWorldMap) %>%
-      setView(lng = -76.3, lat = 39.2, zoom = 9) %>%
-      addPolygons(
-        data = fishingareapolygons.dd, color = "#8373e2", stroke = 0.2, opacity = 0.8,
-        label = fishingareapolygons.dd$name, group = "Fishing Areas") %>%
-      addCircles(
-        data = fishingareacoords.dd_surface, color = ~color, group = "Fishing Area Suitability",
-        label = paste(fishingareacoords.dd_surface$name, fishingareacoords.dd_surface$habitat, sep=", ")) %>%
-      addCircles(data = mddatathiscruise.dd_surface, color = ~color, group = "Whole Bay Suitability") %>%
-      addLayersControl(
-        overlayGroups = c("Fishing Areas", "Fishing Area Suitability", "Whole Bay Suitability"),
-        options = layersControlOptions(collapsed = TRUE)) %>%
-      hideGroup(c("Fishing Areas", "Whole Bay Suitability"))
-  })
-  
   #this makes our hot spot pie chart  
   output$HotSpotPie <- renderPlotly({
     p <- plot_ly(fishinghotspotssummary, 
@@ -241,6 +223,8 @@ server <- function(input, output, session) {
                  textinfo = 'label+percent', 
                  customdata = ~color,
                  marker = list(colors = fishinghotspotssummary$color)) %>%
+      config(displayModeBar=T, displaylogo=F, 
+             toImageButtonOptions= list(filename = 'Whole Bay Pie Chart', width = 500, height = 500)) %>%
       layout(title = 'Fishing Hotspots Habitat Suitability',
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
@@ -250,7 +234,7 @@ server <- function(input, output, session) {
   
   #this makes our whole bay pie chart
   output$WholeBayPie <- renderPlotly({
-    p <- plot_ly(wholebaysurfacesummary, 
+    p <- plot_ly(wholebaybottomsummary, 
                  labels = ~habitat, 
                  values = ~percent, 
                  type = 'pie',
@@ -258,12 +242,33 @@ server <- function(input, output, session) {
                  source = 'WholeBayPie', 
                  textinfo = 'label+percent',
                  customdata = ~color,
-                 marker = list(colors = wholebaysurfacesummary$color)) %>%
+                 marker = list(colors = wholebaybottomsummary$color)) %>%
+      config(displayModeBar=T, displaylogo=F, 
+             toImageButtonOptions= list(filename = 'Whole Bay Pie Chart', width = 500, height = 500)) %>%
       layout(title = 'Whole Bay Habitat Suitability',
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     event_register(p, "plotly_click")
     p
+  })
+  
+  #this generates our map
+  output$BayMap <- renderLeaflet({
+    baymap <- leaflet() %>%
+      addProviderTiles(providers$Esri.WorldTopoMap) %>%
+      setView(lng = -76.3, lat = 39.2, zoom = 9) %>%
+      addPolygons(
+        data = fishingareapolygons.dd, color = "#8373e2", stroke = 0.2, opacity = 0.8,
+        label = fishingareapolygons.dd$name, group = "Fishing Areas") %>%
+      addCircles(
+        data = fishingareacoords.dd_bottom, color = ~color, group = "Fishing Area Suitability",
+        label = paste(fishingareacoords.dd_bottom$name, fishingareacoords.dd_bottom$Sdepth, "ft", sep=" ")) %>%
+      addCircles(data = mddatathiscruise.dd_bottom, color = ~color, group = "Whole Bay Suitability") %>%
+      addLayersControl(
+        overlayGroups = c("Fishing Areas", "Fishing Area Suitability", "Whole Bay Suitability"),
+        options = layersControlOptions(collapsed = FALSE)) %>%
+      hideGroup(c("Fishing Areas", "Whole Bay Suitability"))
+    baymap
   })
   
   #this observes when we click on the pie slice we want to see for the hot spot pie
@@ -276,13 +281,13 @@ server <- function(input, output, session) {
   observeEvent(event_data("plotly_click", source = "WholeBayPie"), {
     click_data <- event_data("plotly_click", source = "WholeBayPie")
     rv$selected_color <- click_data[["customdata"]]
-  }) 
+  })
   
   #observes for the map layers:
   observeEvent(input$layer, {
     rv$active_layer <- input$layer
     rv$selected_color <- NULL  # Optionally reset filter when switching layers
-    
+
     leafletProxy("BayMap") %>%
       hideGroup(c("Fishing Area Suitability", "Whole Bay Suitability")) %>%
       showGroup(input$layer)
@@ -297,23 +302,23 @@ server <- function(input, output, session) {
     leafletProxy("BayMap") %>%
       clearGroup("Fishing Area Suitability") %>%
       clearGroup("Whole Bay Suitability")
-    
+
     if (rv$active_layer == "Fishing Area Suitability") {
-      pts <- fishingareacoords.dd_surface
+      pts <- fishingareacoords.dd_bottom
       if (!is.null(rv$selected_color)) {
         pts <- pts %>% filter(color == rv$selected_color)
       }
       leafletProxy("BayMap") %>%
-        addCircles(data = pts, color = ~color, group = "Fishing Area Suitability", label = ~habitat)
+        addCircles(data = pts, color = ~color, group = "Fishing Area Suitability", label = paste(fishingareacoords.dd_bottom$name, fishingareacoords.dd_bottom$Sdepth, "ft", sep=" "))
     } else if (rv$active_layer == "Whole Bay Suitability") {
-      pts <- mddatathiscruise.dd_surface
+      pts <- mddatathiscruise.dd_bottom
       if (!is.null(rv$selected_color)) {
         pts <- pts %>% filter(color == rv$selected_color)
       }
       leafletProxy("BayMap") %>%
         addCircles(., data = pts, color = ~color, group = "Whole Bay Suitability", label = ~habitat)
     }
-    
+
   })
   
   output$HowToUse <- renderUI({
@@ -332,7 +337,7 @@ server <- function(input, output, session) {
       "<li> You can also filter locations by suitability criteria by selecting the slice of the displayed summary pie chart to display only locations corresponding to that suitability. </li>",
       "<li> Now, anglers can find the best possible locations for fishing for bass based on measured data!</li>",
       "<li> For legend information on how we define suitable habitat for striped bass, see the legend in the panel to the right. </li>",
-      "<li> The map displays surface data (>0.5m) only. Beneath the map find the main bay channel and Potomac river depth suitability.</li>",
+      "<li> The map displays bottom data (<1ft) only. Beneath the map find the main bay channel and Potomac river depth suitability.</li>",
       "<li> Finally, find how this year's data corresponds to historical data at the bottom of the app.</li>",
       "</ul>",
       
@@ -369,7 +374,10 @@ server <- function(input, output, session) {
   output$HotSpot10yrs <- renderPlotly({
     plot_ly(historicbaydata_fishingareas_summary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
             type = 'bar') %>%
-      layout(title = 'Fishing Hot Spot Suitability for the Previous Ten Years',
+      config(displayModeBar=T, displaylogo=F, 
+             modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d"),
+             toImageButtonOptions= list(filename = 'Hot Spot Suitability 10 Yrs', width = 800, height = 500)) %>%
+      layout(title = 'Hot Spot Suitability for', monthname, 'Ten Year History', sep = " ",
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack')
   })
@@ -396,7 +404,10 @@ server <- function(input, output, session) {
   output$WholeBay10yrs <- renderPlotly({
     plot_ly(historicbaydata_summary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
             type = 'bar') %>%
-      layout(title = 'Whole Bay Suitability for the Previous Ten Years',
+      config(displayModeBar=T, displaylogo=F, 
+             modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d"),
+             toImageButtonOptions= list(filename = 'Whole Bay Suitability 10 Yrs', width = 800, height = 500)) %>%
+      layout(title = paste('Whole Bay Suitability for', monthname, 'Ten Year History', sep = " "),
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack')
   })
@@ -421,15 +432,14 @@ server <- function(input, output, session) {
   })
   
   output$WholeBayCrossSection <- renderPlotly({
-    plot_ly()%>%
-      config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
-      add_trace(x=mainchanneldata$milesY,y=mainchanneldata$Sdepth
-                ,hoverinfo="none"
+    mainchannelplotly<-plot_ly()%>%
+      config(displayModeBar=T, modeBarButtonsToRemove = c("zoom", "autoScale2d","toggleSpikelines","select2d","lasso2d")) %>%
+      add_trace(x=mainchanneldata$distfrommouth ,y=mainchanneldata$Sdepth
                 ,type='scatter',mode='markers'
                 ,marker=list(color=mainchanneldata$color))%>%
-      add_annotations(x=citylabels$distfrommouth, #annotations for city labels
+      add_annotations(x=labels_mainstem$distfrommouth, #annotations for city labels
                       y=0,
-                      text=citylabels$name,
+                      text=labels_mainstem$name,
                       xref = "x",
                       yref = "y",
                       showarrow = T,
@@ -438,31 +448,33 @@ server <- function(input, output, session) {
                       ax = 20,
                       ay = -30,
                       textposition="top" )%>%
-      layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed"))%>%
-      layout(yaxis=list(title="Depth (ft)",autorange="reversed"))
+      layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
+      layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
+      layout(title = 'Bay Main Stem Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
+    mainchannelplotly
   })
   
   output$PotomacCrossSection <- renderPlotly({
-    plot_ly()%>%
-      config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
+    potomacchannelplotly <- plot_ly()%>%
+      config(displayModeBar=T, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
       add_trace(x=potomacchanneldata$distfrommouth,y=potomacchanneldata$Sdepth
-                ,hoverinfo="none"
                 ,type='scatter',mode='markers'
                 ,marker=list(color=potomacchanneldata$color))%>%
-      # add_annotations(x=dclabel$distfrompotomac, #annotations for city labels
-      #                 y=0,
-      #                 text=dclabel$name,
-      #                 xref = "x",
-      #                 yref = "y",
-      #                 showarrow = T,
-      #                 arrowhead = 0,
-      #                 arrowsize = 0.5,
-      #                 ax = 20,
-      #                 ay = -30,
-      #                 textposition="top" )%>%
-      layout(xaxis=list(title="Distance from mouth of Potomac (miles)",autorange="reversed",zeroline=FALSE))%>%
-      layout(yaxis=list(title="Depth (ft)",autorange="reversed")) %>%
-      layout(title = 'Potomac River Main Channel Cross Section')
+      add_annotations(x=labels_potomac$distfrommouth, #annotations for city labels
+                      y=0,
+                      text=labels_potomac$name,
+                      xref = "x",
+                      yref = "y",
+                      showarrow = T,
+                      arrowhead = 0,
+                      arrowsize = 0.5,
+                      ax = 20,
+                      ay = -30,
+                      textposition="top" )%>%
+      layout(xaxis=list(title="Distance from mouth of Potomac (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
+      layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
+      layout(title = 'Potomac River Main Channel Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
+    potomacchannelplotly
   })
 }
 

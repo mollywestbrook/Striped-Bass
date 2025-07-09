@@ -1,0 +1,21 @@
+label,x,y,z,name
+river,320000,42750000,5,Potomac
+river,4350000,4090000,5,Atlantic
+river,4230000,4390000,5,Susequehanna
+river,3480000,4140000,5,York
+river,330000,4100000,5,James
+river,2980000,4195000,5,Rappanhanock
+river,4250000,4276685,5,Choptank
+river,410183,4214363,5,Pocomoke
+potomac,323692,4304801,5,"Washington, DC"
+potomac,323447,4296934,5,"Alexandria, VA"
+potomac,301993,4260416,5,Mallows Bay
+potomac,325498,4247824,5,Rt 301 Bridge
+potomac,338450,4236297,5,Cobb Island
+potomac,384006,4210855,5,Pt Lookout
+bay,365054,4345751,5,Baltimore
+bay,406760,4378320,5,Havre de Grace
+bay,381462,4316546,5,Bay Bridge
+bay,384208,4283828,5,Tilghman Island
+bay,379039,4243203,5,Patuxent River Mouth
+bay,399876,4198005,5,MD/VA Line

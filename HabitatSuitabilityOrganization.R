@@ -125,6 +125,21 @@ uniqueIDs<-unique(wholebaydata$uniqueID)
 wholebaydata$Sdepthm<-wholebaydata$Sdepth
 wholebaydata$Sdepth<-wholebaydata$Sdepthm*3.28084  
 
+#mutate in our parameters:
+wholebaydata <- wholebaydata %>%
+  mutate(habitat = case_when(
+    Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
+    Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
+    Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
+    Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
+    TRUE ~ "NA")) %>%
+  mutate(color = case_when(
+    habitat == "Unsuitable" ~ "black",
+    habitat == "Marginal" ~ "orange",
+    habitat == "Tolerable" ~ "yellow",
+    habitat == "Suitable" ~ "dodgerblue",
+    habitat == "NA" ~ "grey90"))
+
 #Identify which bay segments we have --> I may put these segments in a file
 #it will just look visually more appealing and we won't have to update the code
 #if the segments change, we can just update the file
@@ -191,47 +206,6 @@ mddatathiscruise.sf <- st_as_sf(x=mddatathiscruise, coords = c("lat","long"),crs
 mddatathiscruise.dd <- st_transform(mddatathiscruise.sf, crs = "+proj=longlat +datum=WGS84") #transform to DD
 mddatathiscruise.dd$UTMX <- mddatathiscruise$lat
 mddatathiscruise.dd$UTMY <- mddatathiscruise$long
-
-#Bring in the habitat parameters now for leaflet
-
-mddatathiscruise.dd <- mddatathiscruise.dd %>%
-  mutate(habitat = case_when(
-    Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
-    Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
-    Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
-    TRUE ~ "Unsuitable")) %>%
-  mutate(color = case_when(
-    habitat == "Unsuitable" ~ "black",
-    habitat == "Marginal" ~ "orange",
-    habitat == "Tolerable" ~ "yellow",
-    habitat == "Suitable" ~ "dodgerblue"))
-
-fishingareacoords.dd <- fishingareacoords.dd %>%
-  mutate(habitat = case_when(
-    Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
-    Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
-    Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
-    TRUE ~ "Unsuitable")) %>%
-  mutate(color = case_when(
-    habitat == "Unsuitable" ~ "black",
-    habitat == "Marginal" ~ "orange",
-    habitat == "Tolerable" ~ "yellow",
-    habitat == "Suitable" ~ "dodgerblue"))
-
-mddatathiscruise <- mddatathiscruise %>%
-  mutate(habitat = case_when(
-    Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
-    Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
-    Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
-    TRUE ~ "Unsuitable")) %>%
-  mutate(color = case_when(
-    habitat == "Unsuitable" ~ "black",
-    habitat == "Marginal" ~ "orange",
-    habitat == "Tolerable" ~ "yellow",
-    habitat == "Suitable" ~ "dodgerblue"))
 
 #################################################################################
 
@@ -330,21 +304,23 @@ historicbaydata_fishingareas <- left_join(fishingareacoords_df, historicbaydata,
 #It's going to have 3 layers: the fishing hotspots, the suitability of the hotspots, and the suitability of the whole bay
 
 #Filter surface for the map:
-fishingareacoords.dd_surface <- fishingareacoords.dd %>%
-  filter(Sdepth == 0)
-mddatathiscruise.dd_surface <- mddatathiscruise.dd %>%
-  filter(Sdepth == 0)
+fishingareacoords.dd_bottom <- fishingareacoords.dd %>%
+  group_by(uniqueID) %>% 
+  filter(Sdepth == max(Sdepth, na.rm=T))
+mddatathiscruise.dd_bottom <- mddatathiscruise.dd %>%
+  group_by(uniqueID) %>% 
+  filter(Sdepth == max(Sdepth, na.rm=T))
 
 baymap <- leaflet() %>%
-  addProviderTiles(providers$Esri.NatGeoWorldMap) %>%
+  addProviderTiles(providers$Esri.WorldTopoMap) %>%
   setView(lng = -76.3, lat = 39.2, zoom = 9) %>%
   addPolygons(
     data = fishingareapolygons.dd, color = "#8373e2", stroke = 0.2, opacity = 0.8,
     label = fishingareapolygons.dd$name, group = "Fishing Areas") %>%
   addCircles(
-    data = fishingareacoords.dd_surface, color = ~color, group = "Fishing Area Suitability",
-    label = paste(fishingareacoords.dd_surface$name, fishingareacoords.dd_surface$habitat, sep=", ")) %>%
-  addCircles(data = mddatathiscruise.dd_surface, color = ~color, group = "Whole Bay Suitability") %>%
+    data = fishingareacoords.dd_bottom, color = ~color, group = "Fishing Area Suitability",
+    label = paste0(fishingareacoords.dd_bottom$name, fishingareacoords.dd_bottom$Sdepth, "ft")) %>%
+  addCircles(data = mddatathiscruise.dd_bottom, color = ~color, group = "Whole Bay Suitability") %>%
   addLayersControl(
     overlayGroups = c("Fishing Areas", "Fishing Area Suitability", "Whole Bay Suitability"),
     options = layersControlOptions(collapsed = FALSE)) %>%
@@ -355,10 +331,9 @@ baymap
 
 #commented for subsequent runs; st_write doesn't overwrite, so uncomment this line on first run
 
-# st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
-# st_write(fishingareacoords.dd_surface, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_surface.shp", sep="")))
-# st_write(mddatathiscruise.dd_surface, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_surface.shp", sep="")))
-
+st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
+st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
+st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
 
 ###################################################################################
 
@@ -368,7 +343,7 @@ baymap
 #whole bay first
 
 #calculate surface summary
-wholebaysurfacesummary <- mddatathiscruise.dd_surface %>%
+wholebaybottomsummary <- mddatathiscruise.dd_bottom %>%
   st_drop_geometry() %>%
   group_by(habitat, color) %>%
   summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
@@ -377,13 +352,13 @@ wholebaysurfacesummary <- mddatathiscruise.dd_surface %>%
   mutate(percent = volume/volumetotal*100)
 
 #write this df out for the shiny app:
-fwrite(wholebaysurfacesummary, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "wholebaysummary.csv", sep="")), row.names=FALSE)
+fwrite(wholebaybottomsummary, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "wholebaysummary.csv", sep="")), row.names=FALSE)
 
 #generate a figure
-wholebaysummaryplot <- plot_ly(wholebaysurfacesummary, labels = ~habitat, values = ~percent, type = 'pie',
+wholebaysummaryplot <- plot_ly(wholebaybottomsummary, labels = ~habitat, values = ~percent, type = 'pie',
              textposition = 'outside',
              textinfo = 'label+percent',
-             marker = list(colors = wholebaysurfacesummary$color)) %>%
+             marker = list(colors = wholebaybottomsummary$color)) %>%
   layout(title = 'Whole Bay Habitat Suitability',
          xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
@@ -393,7 +368,7 @@ saveWidget(as_widget(wholebaysummaryplot), paste(here("App Figures"),"/PieChart_
 
 #Now, just the fishing hotspots, just like above:
 
-fishinghotspotsummary <- fishingareacoords.dd_surface %>%
+fishinghotspotsummary <- fishingareacoords.dd_bottom %>%
   st_drop_geometry() %>%
   group_by(habitat, color) %>%
   summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
@@ -423,16 +398,16 @@ saveWidget(as_widget(fishinghotspotsplot), paste(here("App Figures"),"/PieChart_
 
 #making our summary sheets for pie charts
 #first we sort suitability
-historicbaydata <- historicbaydata %>%
+historicbaydatasummary <- historicbaydata %>%
   mutate(Habitat = case_when(
     Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
     Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
     Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
     Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
-    TRUE ~ "Unsuitable"))
-
-#summarize the total volume of water and code in our colors
-historicbaydatasummary <- historicbaydata %>%
+    TRUE ~ NA)) %>%
+  mutate(uniqueID = paste(UTMX, UTMY, sep= " ") )%>%
+  group_by(uniqueID) %>%
+  filter(Sdepth == max(Sdepth, na.rm=T)) %>%
   group_by(year, Habitat) %>%
   summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
   mutate(percent = round(volume/sum(volume)*100, 2)) %>%
@@ -447,7 +422,7 @@ historicbaydatasummary <- historicbaydata %>%
     Habitat == "Tolerable" ~ 2,
     Habitat == "Suitable" ~ 3)
   ) %>%
-  arrange(level)
+  arrange(level) 
 
 historicbaydatasummary$Habitat <- factor(historicbaydatasummary$Habitat, levels = c("Suitable", "Tolerable", "Marginal", "Unsuitable"))
 
@@ -484,16 +459,16 @@ saveWidget(as_widget(historicbaydata_wholebay_plot), paste(here("App Figures"),"
 #and likewise, the fishing hotspots:
 
 #again, first we sort suitability
-historicbaydata_fishingareas <- historicbaydata_fishingareas %>%
+historicbaydata_fishingareas_summary <- historicbaydata_fishingareas %>%
   mutate(Habitat = case_when(
     Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
     Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
     Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>suitabletemp | DO>suitableDO ~ "Suitable",
-    TRUE ~ "Unsuitable"))
-
-#summarize the total volume of water
-historicbaydata_fishingareas_summary <- historicbaydata_fishingareas %>%
+    Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
+    TRUE ~ NA)) %>%
+  mutate(uniqueID = paste(UTMX, UTMY, sep= " ") )%>%
+  group_by(uniqueID) %>%
+  filter(Sdepth == max(Sdepth, na.rm=T)) %>%
   group_by(year, Habitat) %>%
   summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
   mutate(percent = round(volume/sum(volume)*100, 2)) %>%
@@ -508,7 +483,7 @@ historicbaydata_fishingareas_summary <- historicbaydata_fishingareas %>%
     Habitat == "Tolerable" ~ 2,
     Habitat == "Suitable" ~ 3)
   ) %>%
-  arrange(level)
+  arrange(level) 
 
 historicbaydata_fishingareas_summary$Habitat <- factor(historicbaydata_fishingareas_summary$Habitat, levels = c("Suitable", "Tolerable", "Marginal", "Unsuitable"))
 
@@ -548,14 +523,6 @@ crosssectionmain<-read_csv("mainchannelpointsCLEAN.csv")
 crosssectionmain<-crosssectionmain[c("UTMX","UTMY")]
 crosssectionmain$keep<-"YES"
 
-#defining parameters for the center channel
-xrange<-c(4410000,4065000)
-xrangemiles<-xrange*0.000621371
-xrangemiles<-c(2750,2526)
-xrangemiless<-xrangemiles-min(xrangemiles)
-xrange<-xrangemiless/0.000621371
-xrangeoriginal<-c(4410000,4065000)
-
 names(mddatathiscruise)[names(mddatathiscruise) == "lat"] <- "UTMX"
 names(mddatathiscruise)[names(mddatathiscruise) == "long"] <- "UTMY"
 mainchanneldata<-merge(mddatathiscruise,crosssectionmain,by=c("UTMX","UTMY"),allow.cartesian=TRUE)
@@ -563,40 +530,38 @@ mainchanneldata<-unique(mainchanneldata)
 
 mainchanneldata$milesX<-mainchanneldata$UTMX*0.000621371
 mainchanneldata$milesY<-mainchanneldata$UTMY*0.000621371
-mainchanneldata$milesY<-mainchanneldata$milesY-min(xrangemiles)
+mainchanneldata$distfrommouth<-mainchanneldata$milesY-min(mainchanneldata$milesY)
 
 mainchanneldata <- mainchanneldata %>%
   mutate(color = case_when(
   habitat == "Unsuitable" ~ "black",
   habitat == "Marginal" ~ "orange",
   habitat == "Tolerable" ~ "yellow",
-  habitat == "Suitable" ~ "dodgerblue"))
+  habitat == "Suitable" ~ "dodgerblue",
+  habitat == NA ~ "grey90"))
 
 #write out for the app
 fwrite(mainchanneldata, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "mainchanneldata.csv", sep="")), row.names=FALSE)
 
-#hand coding in the city lables...let's see if it works:
-citylabels<-NULL
-citylabels$x<-c(355000,323385)
-citylabels$y<-c(4350100,4330000)
-citylabels$z<-c(5,5)
-citylabels$name<-c("Baltimore","Washington, D.C.")
-citylabels<-as.data.frame(citylabels)
-minmiles <- min(xrangemiles)
-citylabels <- citylabels %>%
-  mutate(milesx = x*0.000621371,
-         milesy = y*0.000621371) %>%
-  mutate(distfrommouth = milesy - minmiles)
+#hand coding in the geographic labels
+labels <- read_csv("labels.csv")
+
+#organize labels:
+labels_mainstem <- labels %>%
+  filter(label == "bay") %>%
+  mutate(milesY = y*0.000621371) %>%
+  mutate(distfrommouth = milesY - min(mainchanneldata$milesY))
+
+fwrite(labels_mainstem, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "labels_mainstem.csv", sep="")), row.names=FALSE)
 
 mainchannelplotly<-plot_ly()%>%
-  config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
-  add_trace(x=mainchanneldata$milesY,y=mainchanneldata$Sdepth
-            ,hoverinfo="none"
+  config(displayModeBar=T, modeBarButtonsToRemove = c("zoom", "autoScale2d","toggleSpikelines","select2d","lasso2d")) %>%
+  add_trace(x=mainchanneldata$distfrommouth ,y=mainchanneldata$Sdepth
             ,type='scatter',mode='markers'
             ,marker=list(color=mainchanneldata$color))%>%
-  add_annotations(x=citylabels$distfrommouth, #annotations for city labels
+  add_annotations(x=labels_mainstem$distfrommouth, #annotations for city labels
                  y=0,
-                 text=citylabels$name, 
+                 text=labels_mainstem$name,
                  xref = "x",
                  yref = "y",
                  showarrow = T,
@@ -605,8 +570,8 @@ mainchannelplotly<-plot_ly()%>%
                  ax = 20,
                  ay = -30,
                  textposition="top" )%>%
-  layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed"))%>%
-  layout(yaxis=list(title="Depth (ft)",autorange="reversed"))
+  layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
+  layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F))
 mainchannelplotly
 
 saveWidget(as_widget(mainchannelplotly), paste(here("App Figures"),"/MainChannel",monthdate,thisyear,".html", sep=""))
@@ -620,7 +585,7 @@ crosssectionpotomac<-crosssectionpotomac[c("UTMX","UTMY")]
 crosssectionpotomac$keep<-"YES"
 
 #generating potomac axis labels
-potomacchanneldata<-merge(mddatathiscruise,crosssectionpotomac,by=c("UTMX","UTMY"),allow.cartesian=TRUE)
+potomacchanneldata<-merge(mddatathiscruise,crosssectionpotomac,by=c("UTMX", "UTMY"),allow.cartesian=TRUE)
 potomacchanneldata<-unique(potomacchanneldata)
 
 potomacchanneldata <- potomacchanneldata %>%
@@ -628,39 +593,45 @@ potomacchanneldata <- potomacchanneldata %>%
          milesy = UTMY*0.000621371)
 potomacchanneldata <- potomacchanneldata %>%
   mutate(distfrommouth = milesy - min(potomacchanneldata$milesy, na.rm=T))
-dclabel <- citylabels %>%
-  filter(name == "Washington, D.C.") %>%
-  mutate(distfrompotomac = milesy - min(potomacchanneldata$milesy, na.rm=T))
-  
+
+#organize labels:
+labels_potomac <- labels %>%
+  filter(label == "potomac") %>%
+  mutate(milesY = y*0.000621371) %>%
+  mutate(distfrommouth = milesY - min(potomacchanneldata$milesy, na.rm=T))
+
+fwrite(labels_potomac, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "labels_potomac", sep="")), row.names=FALSE)
 
 potomacchanneldata <- potomacchanneldata %>%
   mutate(color = case_when(
     habitat == "Unsuitable" ~ "black",
     habitat == "Marginal" ~ "orange",
     habitat == "Tolerable" ~ "yellow",
-    habitat == "Suitable" ~ "dodgerblue"))
+    habitat == "Suitable" ~ "dodgerblue",
+    habitat == NA ~ "grey90"))
 
 fwrite(potomacchanneldata, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "potomacchanneldata.csv", sep="")), row.names=FALSE)
 
-potomacchannelplotly<-plot_ly()%>%
-  config(displayModeBar=FALSE, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
+#potomac still needs filling in
+
+potomacchannelplotly <- plot_ly()%>%
+  config(displayModeBar=T, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
   add_trace(x=potomacchanneldata$distfrommouth,y=potomacchanneldata$Sdepth
-            ,hoverinfo="none"
             ,type='scatter',mode='markers'
             ,marker=list(color=potomacchanneldata$color))%>%
-  # add_annotations(x=dclabel$distfrompotomac, #annotations for city labels
-  #                 y=0,
-  #                 text=dclabel$name,
-  #                 xref = "x",
-  #                 yref = "y",
-  #                 showarrow = T,
-  #                 arrowhead = 0,
-  #                 arrowsize = 0.5,
-  #                 ax = 20,
-  #                 ay = -30,
-  #                 textposition="top" )%>%
-  layout(xaxis=list(title="Distance from mouth of Potomac (miles)",autorange="reversed",zeroline=FALSE))%>%
-  layout(yaxis=list(title="Depth (ft)",autorange="reversed")) %>%
+  add_annotations(x=labels_potomac$distfrommouth, #annotations for city labels
+                  y=0,
+                  text=labels_potomac$name,
+                  xref = "x",
+                  yref = "y",
+                  showarrow = T,
+                  arrowhead = 0,
+                  arrowsize = 0.5,
+                  ax = 20,
+                  ay = -30,
+                  textposition="top" )%>%
+  layout(xaxis=list(title="Distance from mouth of Potomac (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
+  layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
   layout(title = 'Potomac River Main Channel Cross Section')
 potomacchannelplotly
 
