@@ -30,7 +30,7 @@ library(ragg)
 
 #### UPDATE THIS WITH CURRENT CRUISE FILE
 
-thiscruise <- "BAY890.csv"
+thiscruise <- "BAY891.csv"
 
 #########################################
 
@@ -256,7 +256,7 @@ server <- function(input, output, session) {
   output$BayMap <- renderLeaflet({
     baymap <- leaflet() %>%
       addProviderTiles(providers$Esri.WorldTopoMap) %>%
-      setView(lng = -76.3, lat = 39.2, zoom = 9) %>%
+      setView(lng = -76.3, lat = 38.5, zoom = 8) %>%
       addPolygons(
         data = fishingareapolygons.dd, color = "#8373e2", stroke = 0.2, opacity = 0.8,
         label = fishingareapolygons.dd$name, group = "Fishing Areas") %>%

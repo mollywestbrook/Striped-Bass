@@ -18,7 +18,7 @@ library(ragg)
 #Define Variables
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv("BAY890.csv")
+rawcruisedata<-read_csv("BAY891.csv")
 
 ###Ensure the data is confined to a single month, otherwise filter out extraneous dates
 startdate<-min(rawcruisedata$Date)
@@ -261,14 +261,14 @@ fetcheveryyearsdata <- function (currentyear) {
       #This formats the new transposed data into one dataset
       #getting rid of this; we've run into a few cases where the df are slightly diff lengths
       #CHECK TO MAKE SURE EVERY FILE MATCHES FIRST
-      # historicwholebaydata <- data.frame(DOt$Segment, 
-      #                                    DOt$UTM_X, 
-      #                                    DOt$UTM_Y, 
-      #                                    DOt$Sdepth, 
-      #                                    DOt$volume_m, 
-      #                                    DOt$DO, 
+      # historicwholebaydata <- data.frame(DOt$Segment,
+      #                                    DOt$UTM_X,
+      #                                    DOt$UTM_Y,
+      #                                    DOt$Sdepth,
+      #                                    DOt$volume_m,
+      #                                    DOt$DO,
       #                                    wtempt$wtemp)
-      historicwholebaydata <- full_join(DOt, wtempt, by=c("Segment", "UTM_X", "UTM_Y", "Sdepth", "volume_m"))
+      historicwholebaydata <- full_join(DOt, wtempt, by=c("Segment", "UTM_X", "UTM_Y", "Sdepth", "volume_m"), relationship = "many-to-many")
       historicwholebaydata <- historicwholebaydata %>%
         mutate(year = rep(currentyear, nrow(historicwholebaydata)))
     },error = \(e) {
@@ -331,9 +331,9 @@ baymap
 
 #commented for subsequent runs; st_write doesn't overwrite, so uncomment this line on first run
 
-st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
-st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
-st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
+# st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
+# st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
+# st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
 
 ###################################################################################
 
@@ -600,7 +600,7 @@ labels_potomac <- labels %>%
   mutate(milesY = y*0.000621371) %>%
   mutate(distfrommouth = milesY - min(potomacchanneldata$milesy, na.rm=T))
 
-fwrite(labels_potomac, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "labels_potomac", sep="")), row.names=FALSE)
+fwrite(labels_potomac, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "labels_potomac.csv", sep="")), row.names=FALSE)
 
 potomacchanneldata <- potomacchanneldata %>%
   mutate(color = case_when(
