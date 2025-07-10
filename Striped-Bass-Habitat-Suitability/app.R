@@ -150,7 +150,7 @@ ui <- fluidPage(
                   ")),
   
   # Application title
-  titlePanel(paste("Striped Bass Habitat Suitability for", monthname, thisyear, sep=' ')),
+  titlePanel(paste("Striped Bass Habitat Suitability for", "Late", monthname, thisyear, sep=' ')),
   
   layout_columns(
     accordion(
@@ -177,28 +177,28 @@ ui <- fluidPage(
     fluidRow(
       column(8, leafletOutput("BayMap", height = 600)),
       column(4,
-             selectInput("layer", "Toggle to Change Layer", choices = c("Fishing Area Suitability", "Whole Bay Suitability"), selected = "Fishing Area Suitability"),
-             conditionalPanel("input.layer == 'Fishing Area Suitability'", plotlyOutput("HotSpotPie")),
-             conditionalPanel("input.layer == 'Whole Bay Suitability'", plotlyOutput("WholeBayPie"))
+             selectInput("layer", "Toggle to Change Layer", choices = c("Fishing Area Habitat Suitability", "Whole Bay Habitat Suitability"), selected = "Fishing Area Suitability"),
+             conditionalPanel("input.layer == 'Fishing Area Habitat Suitability'", plotlyOutput("HotSpotPie")),
+             conditionalPanel("input.layer == 'Whole Bay Habitat Suitability'", plotlyOutput("WholeBayPie"))
       )
     )
   ),
   
   layout_columns(
     navset_card_tab(
-      nav_panel("Cross-Section of the Main Stem", plotlyOutput(outputId = 'WholeBayCrossSection')), 
+      nav_panel("Cross-Section of the Mainstem", plotlyOutput(outputId = 'WholeBayCrossSection')), 
       nav_panel("Cross-Section of the Potomac", plotlyOutput(outputId = 'PotomacCrossSection'))
     )
   ),
   
   layout_columns(
     navset_card_tab(
-      nav_panel("Hot Spot Suitability, Last 10 Yrs", plotlyOutput(outputId = "HotSpot10yrs")), 
-      nav_panel("Hot Spot Mean Suitability vs Historical Average", plotOutput(outputId = "HotSpotVolume"))
+      nav_panel("Fishing Area Habitat Suitability, Last 10 Yrs", plotlyOutput(outputId = "HotSpot10yrs")), 
+      nav_panel("Fishing Area Mean Habitat Suitability vs Historical Average", plotOutput(outputId = "HotSpotVolume"))
     ),
     navset_card_tab(
-      nav_panel("Total Bay Suitability, Last 10 Yrs", plotlyOutput(outputId = "WholeBay10yrs")), 
-      nav_panel("Total Bay Mean Suitability vs Historical Average", plotOutput(outputId = "WholeBayVolume"))
+      nav_panel("Whole Bay Habitat Suitability, Last 10 Yrs", plotlyOutput(outputId = "WholeBay10yrs")), 
+      nav_panel("Whole Bay Mean Habitat Suitability vs Historical Average", plotOutput(outputId = "WholeBayVolume"))
     )
   )
 )
@@ -225,7 +225,7 @@ server <- function(input, output, session) {
                  marker = list(colors = fishinghotspotssummary$color)) %>%
       config(displayModeBar=T, displaylogo=F, 
              toImageButtonOptions= list(filename = 'Whole Bay Pie Chart', width = 500, height = 500)) %>%
-      layout(title = 'Fishing Hotspots Habitat Suitability',
+      layout(title = 'Fishing Area Habitat Suitability',
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     event_register(p, "plotly_click")
@@ -261,13 +261,13 @@ server <- function(input, output, session) {
         data = fishingareapolygons.dd, color = "#8373e2", stroke = 0.2, opacity = 0.8,
         label = fishingareapolygons.dd$name, group = "Fishing Areas") %>%
       addCircles(
-        data = fishingareacoords.dd_bottom, color = ~color, group = "Fishing Area Suitability",
+        data = fishingareacoords.dd_bottom, color = ~color, group = "Fishing Area Habitat Suitability",
         label = paste(fishingareacoords.dd_bottom$name, fishingareacoords.dd_bottom$Sdepth, "ft", sep=" ")) %>%
-      addCircles(data = mddatathiscruise.dd_bottom, color = ~color, group = "Whole Bay Suitability") %>%
+      addCircles(data = mddatathiscruise.dd_bottom, color = ~color, group = "Whole Bay Habitat Suitability") %>%
       addLayersControl(
-        overlayGroups = c("Fishing Areas", "Fishing Area Suitability", "Whole Bay Suitability"),
+        overlayGroups = c("Fishing Areas", "Fishing Area Habitat Suitability", "Whole Bay Habitat Suitability"),
         options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(c("Fishing Areas", "Whole Bay Suitability"))
+      hideGroup(c("Fishing Areas", "Whole Bay Habitat Suitability"))
     baymap
   })
   
@@ -289,7 +289,7 @@ server <- function(input, output, session) {
     rv$selected_color <- NULL  # Optionally reset filter when switching layers
 
     leafletProxy("BayMap") %>%
-      hideGroup(c("Fishing Area Suitability", "Whole Bay Suitability")) %>%
+      hideGroup(c("Fishing Area Habitat Suitability", "Whole Bay Habitat Suitability")) %>%
       showGroup(input$layer)
   })
   
@@ -300,23 +300,23 @@ server <- function(input, output, session) {
     rv$active_layer
   }, {
     leafletProxy("BayMap") %>%
-      clearGroup("Fishing Area Suitability") %>%
-      clearGroup("Whole Bay Suitability")
+      clearGroup("Fishing Area Habitat Suitability") %>%
+      clearGroup("Whole Bay Habitat Suitability")
 
-    if (rv$active_layer == "Fishing Area Suitability") {
+    if (rv$active_layer == "Fishing Area Habitat Suitability") {
       pts <- fishingareacoords.dd_bottom
       if (!is.null(rv$selected_color)) {
         pts <- pts %>% filter(color == rv$selected_color)
       }
       leafletProxy("BayMap") %>%
-        addCircles(data = pts, color = ~color, group = "Fishing Area Suitability", label = paste(fishingareacoords.dd_bottom$name, fishingareacoords.dd_bottom$Sdepth, "ft", sep=" "))
-    } else if (rv$active_layer == "Whole Bay Suitability") {
+        addCircles(data = pts, color = ~color, group = "Fishing Area Habitat Suitability", label = paste(fishingareacoords.dd_bottom$name, fishingareacoords.dd_bottom$Sdepth, "ft", sep=" "))
+    } else if (rv$active_layer == "Whole Bay Habitat Suitability") {
       pts <- mddatathiscruise.dd_bottom
       if (!is.null(rv$selected_color)) {
         pts <- pts %>% filter(color == rv$selected_color)
       }
       leafletProxy("BayMap") %>%
-        addCircles(., data = pts, color = ~color, group = "Whole Bay Suitability", label = ~habitat)
+        addCircles(., data = pts, color = ~color, group = "Whole Bay Habitat Suitability", label = ~habitat)
     }
 
   })
@@ -330,14 +330,14 @@ server <- function(input, output, session) {
       "<p> The following list walks through each panel of information to best predict where you may find Striped Bass at this time of the year. </p>",
       
       "<ul>",
-      "<li> The map displays up to three layers: fishing hotspot locations, habitat suitability in fishing hot spots, and habitat suitability across the entire bay.</li>",
-      "<li> By default, the fishing hot spot habitat suitability is displayed. </li>",
-      "<li> To activate the fishing hot spot locations, hover over the map's layer panel. You can display these over the whole bay data, or just the hot spot data. </li>",
+      "<li> The map displays up to three layers: fishing area locations, habitat suitability in fishing areas, and habitat suitability across the entire bay.</li>",
+      "<li> By default, the fishing area habitat suitability is displayed. </li>",
+      "<li> To activate the fishing area locations, hover over the map's layer panel. You can display these over the whole bay data, or just the hot spot data. </li>",
       "<li> Select which layer you'd like to see by selecting the layer under the 'Toggle to Change' tab.</li>",
       "<li> You can also filter locations by suitability criteria by selecting the slice of the displayed summary pie chart to display only locations corresponding to that suitability. </li>",
       "<li> Now, anglers can find the best possible locations for fishing for bass based on measured data!</li>",
       "<li> For legend information on how we define suitable habitat for striped bass, see the legend in the panel to the right. </li>",
-      "<li> The map displays bottom data (<1ft) only. Beneath the map find the main bay channel and Potomac river depth suitability.</li>",
+      "<li> The map displays bottom data (<1ft) only. Beneath the map find the main bay channel and Potomac river depth habitat suitability.</li>",
       "<li> Finally, find how this year's data corresponds to historical data at the bottom of the app.</li>",
       "</ul>",
       
@@ -348,7 +348,7 @@ server <- function(input, output, session) {
   
   output$SuitableCriteria <- renderImage({
     filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Bass Suitable Criteria.png')))
-    list(src = filename, alt = "Striped Bass Suitability Criteria", width="100%")
+    list(src = filename, alt = "Striped Bass Habitat Suitability Criteria", width="100%")
   }, deleteFile = FALSE)
   
   output$StripedBassSqueeze <- renderImage({
@@ -377,7 +377,7 @@ server <- function(input, output, session) {
       config(displayModeBar=T, displaylogo=F, 
              modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d"),
              toImageButtonOptions= list(filename = 'Hot Spot Suitability 10 Yrs', width = 800, height = 500)) %>%
-      layout(title = 'Hot Spot Suitability for', monthname, 'Ten Year History', sep = " ",
+      layout(title = paste('Fishing Area Habitat Suitability for', "Late", monthname, 'Ten Year History', sep = " "),
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack')
   })
@@ -406,8 +406,8 @@ server <- function(input, output, session) {
             type = 'bar') %>%
       config(displayModeBar=T, displaylogo=F, 
              modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d"),
-             toImageButtonOptions= list(filename = 'Whole Bay Suitability 10 Yrs', width = 800, height = 500)) %>%
-      layout(title = paste('Whole Bay Suitability for', monthname, 'Ten Year History', sep = " "),
+             toImageButtonOptions= list(filename = 'Whole Bay Habitat Suitability 10 Yrs', width = 800, height = 500)) %>%
+      layout(title = paste('Whole Bay Habitat Suitability for', "Late", monthname, 'Ten Year History', sep = " "),
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack')
   })
@@ -450,7 +450,7 @@ server <- function(input, output, session) {
                       textposition="top" )%>%
       layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
       layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
-      layout(title = 'Bay Main Stem Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
+      layout(title = 'Bay Mainstem Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
     mainchannelplotly
   })
   
@@ -473,7 +473,7 @@ server <- function(input, output, session) {
                       textposition="top" )%>%
       layout(xaxis=list(title="Distance from mouth of Potomac (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
       layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
-      layout(title = 'Potomac River Main Channel Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
+      layout(title = 'Potomac River Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
     potomacchannelplotly
   })
 }

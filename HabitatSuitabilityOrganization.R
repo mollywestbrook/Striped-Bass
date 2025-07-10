@@ -120,7 +120,7 @@ rm(DO, wtemp, DOdata, wtempdata, DOt, wtempt)
 
 #Generate a unique ID for each measurement:
 wholebaydata$uniqueID<-paste(wholebaydata$UTMX,wholebaydata$UTMY)
-uniqueIDs<-unique(wholebaydata$uniqueID)
+#uniqueIDs<-unique(wholebaydata$uniqueID)
 #Transform depth to feet
 wholebaydata$Sdepthm<-wholebaydata$Sdepth
 wholebaydata$Sdepth<-wholebaydata$Sdepthm*3.28084  
@@ -131,7 +131,7 @@ wholebaydata <- wholebaydata %>%
     Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
     Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
     Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
+    Wtemp<=suitabletemp | DO>=suitableDO ~ "Suitable",
     TRUE ~ "NA")) %>%
   mutate(color = case_when(
     habitat == "Unsuitable" ~ "black",
@@ -331,9 +331,9 @@ baymap
 
 #commented for subsequent runs; st_write doesn't overwrite, so uncomment this line on first run
 
-# st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
-# st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
-# st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
+st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
+st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
+st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
 
 ###################################################################################
 
@@ -403,7 +403,7 @@ historicbaydatasummary <- historicbaydata %>%
     Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
     Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
     Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
+    Wtemp<=suitabletemp | DO>=suitableDO ~ "Suitable",
     TRUE ~ NA)) %>%
   mutate(uniqueID = paste(UTMX, UTMY, sep= " ") )%>%
   group_by(uniqueID) %>%
@@ -464,7 +464,7 @@ historicbaydata_fishingareas_summary <- historicbaydata_fishingareas %>%
     Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
     Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
     Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp>=suitabletemp | DO>=suitableDO ~ "Suitable",
+    Wtemp<=suitabletemp | DO>=suitableDO ~ "Suitable",
     TRUE ~ NA)) %>%
   mutate(uniqueID = paste(UTMX, UTMY, sep= " ") )%>%
   group_by(uniqueID) %>%
