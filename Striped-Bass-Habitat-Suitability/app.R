@@ -446,11 +446,11 @@ server <- function(input, output, session) {
       layout(title = paste('Fishing Area Habitat Suitability for', lateorearly, monthname, 'Ten Year History', sep = " "),
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack',
-             margin = list(b = 75),
-             annotations = list(x = 1.1, y = -0.2, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
+             margin = list(b = 100),
+             annotations = list(x = 1.1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
                                 showarrow = F, xref='paper', yref='paper', 
                                 xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                                font=list(size=12)))
+                                font=list(size=11)))
   })
   
   output$HotSpotVolume <- renderPlot({
@@ -481,11 +481,11 @@ server <- function(input, output, session) {
       layout(title = paste('Whole Bay Habitat Suitability for', lateorearly, monthname, 'Ten Year History', sep = " "),
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack',
-             margin = list(b = 75),
-             annotations = list(x = 1.1, y = -0.2, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
+             margin = list(b = 100),
+             annotations = list(x = 1.1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
                                 showarrow = F, xref='paper', yref='paper', 
                                 xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                                font=list(size=12)))
+                                font=list(size=11)))
   })
   
   output$WholeBayVolume <- renderPlot({
