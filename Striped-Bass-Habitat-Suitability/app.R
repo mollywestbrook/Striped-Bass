@@ -32,6 +32,9 @@ library(ragg)
 
 thiscruise <- "BAY891.csv"
 
+#late or early? Update
+lateorearly <- "Late"
+
 #########################################
 
 #variables the app needs
@@ -129,9 +132,6 @@ fishingareacoords.dd_bottom <- st_read(here("Striped-Bass-Habitat-Suitability", 
 
 mddatathiscruise.dd_bottom <- st_read(here("Striped-Bass-Habitat-Suitability", "WholeBayQuality"))
 
-#one more quick fix for the labels for the map:
-
-#fishingpointlabels <- paste(fishingareacoords.dd_surface$name, fishingareacoords.dd_surface$Sdepth, "ft", sep=" ")
 
 ############ UI ######################
 
@@ -140,6 +140,8 @@ mddatathiscruise.dd_bottom <- st_read(here("Striped-Bass-Habitat-Suitability", "
 
 ui <- fluidPage(
   theme = bs_theme(preset = "flatly"),
+  
+  #styling the info tab to be a light blue
   tags$style(HTML("
     .accordion {
       --bs-accordion-bg: #d1e6fc
@@ -150,7 +152,7 @@ ui <- fluidPage(
                   ")),
   
   # Application title
-  titlePanel(paste("Striped Bass Habitat Suitability for", "Late", monthname, thisyear, sep=' ')),
+  titlePanel(paste("Striped Bass Habitat Suitability for", lateorearly, monthname, thisyear, sep=' ')),
   
   layout_columns(
     accordion(
@@ -177,7 +179,7 @@ ui <- fluidPage(
     fluidRow(
       column(8, leafletOutput("BayMap", height = 600)),
       column(4,
-             selectInput("layer", "Toggle to Change Layer", choices = c("Fishing Area Habitat Suitability", "Whole Bay Habitat Suitability"), selected = "Fishing Area Suitability"),
+             selectInput("layer", "Toggle to Change Layer", choices = c("Fishing Area Habitat Suitability", "Whole Bay Habitat Suitability"), selected = "Fishing Area Habitat Suitability"),
              conditionalPanel("input.layer == 'Fishing Area Habitat Suitability'", plotlyOutput("HotSpotPie")),
              conditionalPanel("input.layer == 'Whole Bay Habitat Suitability'", plotlyOutput("WholeBayPie"))
       )
@@ -208,6 +210,64 @@ ui <- fluidPage(
 #This generates all the data and figures
 
 server <- function(input, output, session) {
+  
+  #this first section contains the app instructions + information
+  
+  #app instructions
+  output$HowToUse <- renderUI({
+    HTML(paste(
+      "<p>This dashboard provides habitat suitability information for Striped Bass.</p>",
+      
+      "<p>To understand how Bass habitat may change over the year, select 'Striped Bass Squeeze' in the panel to the right. </p>",
+      
+      "<p> The following list walks through each panel of information to best predict where you may find Striped Bass at this time of the year. </p>",
+      
+      "<ul>",
+      "<li> The map displays up to three layers: fishing area locations, habitat suitability in fishing areas, and habitat suitability across the entire bay.</li>",
+      "<li> By default, the fishing area habitat suitability is displayed. </li>",
+      "<li> To activate the fishing area locations, hover over the map's layer panel. You can display these over the whole bay data, or just the hot spot data. </li>",
+      "<li> Select which layer you'd like to see by selecting the layer under the 'Toggle to Change' tab.</li>",
+      "<li> You can also filter locations by suitability criteria by selecting the slice of the displayed summary pie chart to display only locations corresponding to that suitability. </li>",
+      "<li> Now, anglers can find the best possible locations for fishing for bass based on measured data!</li>",
+      "<li> For legend information on how we define suitable habitat for striped bass, see the legend in the panel to the right. </li>",
+      "<li> The map displays bottom data (<1ft) only. Beneath the map find the main bay channel and Potomac river depth habitat suitability.</li>",
+      "<li> Finally, find how this year's data corresponds to historical data at the bottom of the app.</li>",
+      "</ul>",
+      
+      "For more information, see the links to other DNR resources in the panel to the right.",
+      sep=""
+    ))
+  })
+  
+  #render suitable criteria legend
+  output$SuitableCriteria <- renderImage({
+    filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Bass Suitable Criteria.png')))
+    list(src = filename, alt = "Striped Bass Habitat Suitability Criteria", width="100%")
+  }, deleteFile = FALSE)
+  
+  #render striped bass squeeze image
+  output$StripedBassSqueeze <- renderImage({
+    filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Striped Bass Squeeze.png')))
+    list(src = filename, alt = "Striped Bass Squeeze", width="100%")
+  }, deleteFile = FALSE)
+  
+  #more information
+  output$DNRLinks <- renderUI({
+    HTML(paste(
+      "<p>DNR Links for More Information:</p>",
+      "<ul>",
+      "<li> <a href=", "https://eyesonthebay.dnr.maryland.gov/", " target=", "_gap", " rel=", "noreferrer", "> Water Quality Information: Eyes on the Bay</a></li>",
+      "</ul>",
+      "<p>Striped Bass Habitat Criteria:</p>",
+      "<ul>",
+      "<li> <a href=", "https://eyesonthebay.dnr.maryland.gov/eyesonthebay/documents/DevelopmentOfTemperatureAndDOBasedHabitatRequirements.pdf", " target=", "_gap", " rel=", "noreferrer", "> Development of Habitat Conditions</a>, pg 136-144</li>",
+      "<li> <a href=", "https://eyesonthebay.dnr.maryland.gov/eyesonthebay/documents/ImpactsOfClimateChangeOnStripedBassHabitat2023.pdf", " target=", "_gap", " rel=", "noreferrer", "> Climate Change and Resident Chesapeake Bay Striped Bass Habitat</a>, slides 1-15</li>",
+      "</ul>",
+      sep=""
+    ))
+  })
+
+  #this second section operates the leaflet map and pie chart interactivity:
   
   #make the map reactive
   rv <- reactiveValues(selected_color = NULL, active_layer = "Fishing Area Suitability")
@@ -321,55 +381,61 @@ server <- function(input, output, session) {
 
   })
   
-  output$HowToUse <- renderUI({
-    HTML(paste(
-      "<p>This dashboard provides habitat suitability information for Striped Bass.</p>",
-      
-      "<p>To understand how Bass habitat may change over the year, select 'Striped Bass Squeeze' in the panel to the right. </p>",
-      
-      "<p> The following list walks through each panel of information to best predict where you may find Striped Bass at this time of the year. </p>",
-      
-      "<ul>",
-      "<li> The map displays up to three layers: fishing area locations, habitat suitability in fishing areas, and habitat suitability across the entire bay.</li>",
-      "<li> By default, the fishing area habitat suitability is displayed. </li>",
-      "<li> To activate the fishing area locations, hover over the map's layer panel. You can display these over the whole bay data, or just the hot spot data. </li>",
-      "<li> Select which layer you'd like to see by selecting the layer under the 'Toggle to Change' tab.</li>",
-      "<li> You can also filter locations by suitability criteria by selecting the slice of the displayed summary pie chart to display only locations corresponding to that suitability. </li>",
-      "<li> Now, anglers can find the best possible locations for fishing for bass based on measured data!</li>",
-      "<li> For legend information on how we define suitable habitat for striped bass, see the legend in the panel to the right. </li>",
-      "<li> The map displays bottom data (<1ft) only. Beneath the map find the main bay channel and Potomac river depth habitat suitability.</li>",
-      "<li> Finally, find how this year's data corresponds to historical data at the bottom of the app.</li>",
-      "</ul>",
-      
-      "For more information, see the links to other DNR resources in the panel to the right.",
-      sep=""
-    ))
+  #this next section contains the cross-section images:
+  
+  output$WholeBayCrossSection <- renderPlotly({
+    mainchannelplotly<-plot_ly()%>%
+      config(displayModeBar=T, modeBarButtonsToRemove = c("zoom", "autoScale2d","toggleSpikelines","select2d","lasso2d"),
+             toImageButtonOptions= list(filename = 'Whole Bay Cross-Section', width = 1000, height = 750)) %>%
+      add_trace(x=mainchanneldata$distfrommouth ,y=mainchanneldata$Sdepth
+                ,type='scatter',mode='markers'
+                ,text = paste0(mainchanneldata$Sdepth, "ft ", mainchanneldata$Wtemp, "F ", mainchanneldata$DO, "mg/L ")
+                ,hoverinfo = 'text'
+                ,marker=list(color=mainchanneldata$color))%>%
+      add_annotations(x=labels_mainstem$distfrommouth, #annotations for city labels
+                      y=0,
+                      text=labels_mainstem$name,
+                      xref = "x",
+                      yref = "y",
+                      showarrow = T,
+                      arrowhead = 0,
+                      arrowsize = 0.5,
+                      ax = 20,
+                      ay = -30,
+                      textposition="top" )%>%
+      layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
+      layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
+      layout(title = 'Bay Mainstem Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
+    mainchannelplotly
   })
   
-  output$SuitableCriteria <- renderImage({
-    filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Bass Suitable Criteria.png')))
-    list(src = filename, alt = "Striped Bass Habitat Suitability Criteria", width="100%")
-  }, deleteFile = FALSE)
-  
-  output$StripedBassSqueeze <- renderImage({
-    filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Striped Bass Squeeze.png')))
-    list(src = filename, alt = "Striped Bass Squeeze", width="100%")
-  }, deleteFile = FALSE)
-  
-  output$DNRLinks <- renderUI({
-    HTML(paste(
-      "<p>DNR Links for More Information:</p>",
-      "<ul>",
-      "<li> <a href=", "https://eyesonthebay.dnr.maryland.gov/", " target=", "_gap", " rel=", "noreferrer", "> Water Quality Information: Eyes on the Bay</a></li>",
-      "</ul>",
-      "<p>Striped Bass Habitat Criteria:</p>",
-      "<ul>",
-      "<li> <a href=", "https://eyesonthebay.dnr.maryland.gov/eyesonthebay/documents/DevelopmentOfTemperatureAndDOBasedHabitatRequirements.pdf", " target=", "_gap", " rel=", "noreferrer", "> Development of Habitat Conditions</a>, pg 136-144</li>",
-      "<li> <a href=", "https://eyesonthebay.dnr.maryland.gov/eyesonthebay/documents/ImpactsOfClimateChangeOnStripedBassHabitat2023.pdf", " target=", "_gap", " rel=", "noreferrer", "> Climate Change and Resident Chesapeake Bay Striped Bass Habitat</a>, slides 1-15</li>",
-      "</ul>",
-      sep=""
-    ))
+  output$PotomacCrossSection <- renderPlotly({
+    potomacchannelplotly <- plot_ly()%>%
+      config(displayModeBar=T, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d"),
+             toImageButtonOptions= list(filename = 'Potomac Cross-Section', width = 1000, height = 750)) %>%
+      add_trace(x=potomacchanneldata$distfrommouth,y=potomacchanneldata$Sdepth
+                ,type='scatter',mode='markers'
+                ,text = paste0(potomacchanneldata$Sdepth, "ft ", potomacchanneldata$Wtemp, "F ", potomacchanneldata$DO, "mg/L ")
+                ,hoverinfo = 'text'
+                ,marker=list(color=potomacchanneldata$color))%>%
+      add_annotations(x=labels_potomac$distfrommouth, #annotations for city labels
+                      y=0,
+                      text=labels_potomac$name,
+                      xref = "x",
+                      yref = "y",
+                      showarrow = T,
+                      arrowhead = 0,
+                      arrowsize = 0.5,
+                      ax = 20,
+                      ay = -30,
+                      textposition="top" )%>%
+      layout(xaxis=list(title="Distance from mouth of Potomac (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
+      layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
+      layout(title = 'Potomac River Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
+    potomacchannelplotly
   })
+
+#final section is the historical data
   
   output$HotSpot10yrs <- renderPlotly({
     plot_ly(historicbaydata_fishingareas_summary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
@@ -377,9 +443,13 @@ server <- function(input, output, session) {
       config(displayModeBar=T, displaylogo=F, 
              modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d"),
              toImageButtonOptions= list(filename = 'Hot Spot Suitability 10 Yrs', width = 800, height = 500)) %>%
-      layout(title = paste('Fishing Area Habitat Suitability for', "Late", monthname, 'Ten Year History', sep = " "),
+      layout(title = paste('Fishing Area Habitat Suitability for', lateorearly, monthname, 'Ten Year History', sep = " "),
              yaxis = list(title = 'Percent of Habitat'),
-             barmode = 'stack')
+             barmode = 'stack',
+             annotations = list(x = 0.4, y = -0.135, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
+                                showarrow = F, xref='paper', yref='paper', 
+                                xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                                font=list(size=12)))
   })
   
   output$HotSpotVolume <- renderPlot({
@@ -407,9 +477,13 @@ server <- function(input, output, session) {
       config(displayModeBar=T, displaylogo=F, 
              modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d"),
              toImageButtonOptions= list(filename = 'Whole Bay Habitat Suitability 10 Yrs', width = 800, height = 500)) %>%
-      layout(title = paste('Whole Bay Habitat Suitability for', "Late", monthname, 'Ten Year History', sep = " "),
+      layout(title = paste('Whole Bay Habitat Suitability for', lateorearly, monthname, 'Ten Year History', sep = " "),
              yaxis = list(title = 'Percent of Habitat'),
-             barmode = 'stack')
+             barmode = 'stack',
+             annotations = list(x = 0.4, y = -0.135, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
+                                showarrow = F, xref='paper', yref='paper', 
+                                xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                                font=list(size=12)))
   })
   
   output$WholeBayVolume <- renderPlot({
@@ -430,52 +504,7 @@ server <- function(input, output, session) {
             axis.text.x=element_text(angle=45, hjust=1))
     historicmeans_wb_plot
   })
-  
-  output$WholeBayCrossSection <- renderPlotly({
-    mainchannelplotly<-plot_ly()%>%
-      config(displayModeBar=T, modeBarButtonsToRemove = c("zoom", "autoScale2d","toggleSpikelines","select2d","lasso2d")) %>%
-      add_trace(x=mainchanneldata$distfrommouth ,y=mainchanneldata$Sdepth
-                ,type='scatter',mode='markers'
-                ,marker=list(color=mainchanneldata$color))%>%
-      add_annotations(x=labels_mainstem$distfrommouth, #annotations for city labels
-                      y=0,
-                      text=labels_mainstem$name,
-                      xref = "x",
-                      yref = "y",
-                      showarrow = T,
-                      arrowhead = 0,
-                      arrowsize = 0.5,
-                      ax = 20,
-                      ay = -30,
-                      textposition="top" )%>%
-      layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
-      layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
-      layout(title = 'Bay Mainstem Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
-    mainchannelplotly
-  })
-  
-  output$PotomacCrossSection <- renderPlotly({
-    potomacchannelplotly <- plot_ly()%>%
-      config(displayModeBar=T, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
-      add_trace(x=potomacchanneldata$distfrommouth,y=potomacchanneldata$Sdepth
-                ,type='scatter',mode='markers'
-                ,marker=list(color=potomacchanneldata$color))%>%
-      add_annotations(x=labels_potomac$distfrommouth, #annotations for city labels
-                      y=0,
-                      text=labels_potomac$name,
-                      xref = "x",
-                      yref = "y",
-                      showarrow = T,
-                      arrowhead = 0,
-                      arrowsize = 0.5,
-                      ax = 20,
-                      ay = -30,
-                      textposition="top" )%>%
-      layout(xaxis=list(title="Distance from mouth of Potomac (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
-      layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
-      layout(title = 'Potomac River Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
-    potomacchannelplotly
-  })
+
 }
 
 # Run the application 

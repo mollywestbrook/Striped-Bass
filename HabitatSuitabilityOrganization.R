@@ -113,6 +113,8 @@ wholebaydata <- data.frame(DOt$Segment,
                            DOt$volume_m, 
                            DOt$DO, 
                            wtempt$wtemp)
+#uncomment this line if the dfs are two different lengths
+#historicwholebaydata <- full_join(DOt, wtempt, by=c("Segment", "UTM_X", "UTM_Y", "Sdepth", "volume_m"), relationship = "many-to-many")
 names(wholebaydata) <- c("Segment", "UTMX","UTMY", "Sdepth","volume_m","DO", "Wtemp")
 
 #Cleanup
@@ -188,11 +190,12 @@ colnames(fishingareacoords_df)[which(names(fishingareacoords_df) == "Y")] <- "UT
 #merge the fishing areas to the water quality
 fishingareadatathiscruise <- left_join(fishingareacoords_df, mddatathiscruise, by=c("UTMX","UTMY"), relationship = "many-to-many")
 
+#cleanup
 rm(fishingareapolygons, wholebaydatacoords, wholebaydatacoords_sf)
 
 ################
 
-#additional stuff for the leaflet map, we need to convert the data to decimal degree
+#additional stuff for the leaflet map, we need to convert the fishing areas and whole bay data to decimal degree
 fishingareapolygons.dd <- st_transform(fishingareapolygons.utm, crs = "+proj=longlat +datum=WGS84") #transform to DD
 fishingareacoords.sf <- st_as_sf(x=fishingareacoords, coords = c("long","lat"),crs=32618)
 fishingareacoords.dd <- st_transform(fishingareacoords.sf, crs = "+proj=longlat +datum=WGS84") #transform to DD
@@ -283,6 +286,27 @@ historicbaydata <- do.call(rbind.data.frame, historicbaydata) #this takes the li
 names(historicbaydata) <- c("Segment", "UTMX","UTMY", "Sdepth","volume_m","DO", "Wtemp", "year")
 #rm(DO, DOdata, DOt, wtemp, wtempdata, wtempt)
 
+#mutate in habitat parameters:
+historicbaydata <- historicbaydata %>%
+  mutate(uniqueID = paste(UTMX, UTMY, sep= " ")) %>%
+  mutate(Habitat = case_when(
+    Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
+    Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
+    Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
+    Wtemp<=suitabletemp | DO>=suitableDO ~ "Suitable",
+    TRUE ~ NA)) %>%
+  mutate(color = case_when(
+    Habitat == "Unsuitable" ~ "black",
+    Habitat == "Marginal" ~ "orange",
+    Habitat == "Tolerable" ~ "yellow",
+    Habitat == "Suitable" ~ "dodgerblue")) %>%
+  mutate(level = case_when(
+    Habitat == "Unsuitable" ~ 0,
+    Habitat == "Marginal" ~ 1,
+    Habitat == "Tolerable" ~ 2,
+    Habitat == "Suitable" ~ 3)
+  )
+
 #sort into bay segments:
 historicbaydata<-historicbaydata[historicbaydata$Segment %in% mdsegments,]
 
@@ -331,16 +355,15 @@ baymap
 
 #commented for subsequent runs; st_write doesn't overwrite, so uncomment this line on first run
 
-st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
-st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
-st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
+# st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
+# st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
+# st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
 
 ###################################################################################
 
-#next, we want to summarize the whole bay and the fishing hotspots
-#for the total volume of water that is suitable for striped bass
+#Pie Charts Habitat Suitability
 
-#whole bay first
+################Whole Bay
 
 #calculate surface summary
 wholebaybottomsummary <- mddatathiscruise.dd_bottom %>%
@@ -366,7 +389,7 @@ wholebaysummaryplot
 
 saveWidget(as_widget(wholebaysummaryplot), paste(here("App Figures"),"/PieChart_WholeBay",monthdate,thisyear,".html", sep=""))
 
-#Now, just the fishing hotspots, just like above:
+################Hot Spots
 
 fishinghotspotsummary <- fishingareacoords.dd_bottom %>%
   st_drop_geometry() %>%
@@ -390,155 +413,25 @@ fishinghotspotsplot
 
 saveWidget(as_widget(fishinghotspotsplot), paste(here("App Figures"),"/PieChart_FishingHotspots",monthdate,thisyear,".html", sep=""))
 
-###############################################################################
+###################################################################################
 
-#The stacked bar plots 
+#Cross-section figures
 
-#Whole Bay first
+##############Mainstem cross-section
 
-#making our summary sheets for pie charts
-#first we sort suitability
-historicbaydatasummary <- historicbaydata %>%
-  mutate(Habitat = case_when(
-    Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
-    Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
-    Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp<=suitabletemp | DO>=suitableDO ~ "Suitable",
-    TRUE ~ NA)) %>%
-  mutate(uniqueID = paste(UTMX, UTMY, sep= " ") )%>%
-  group_by(uniqueID) %>%
-  filter(Sdepth == max(Sdepth, na.rm=T)) %>%
-  group_by(year, Habitat) %>%
-  summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
-  mutate(percent = round(volume/sum(volume)*100, 2)) %>%
-  mutate(color = case_when(
-    Habitat == "Unsuitable" ~ "black",
-    Habitat == "Marginal" ~ "orange",
-    Habitat == "Tolerable" ~ "yellow",
-    Habitat == "Suitable" ~ "dodgerblue")) %>%
-  mutate(level = case_when(
-    Habitat == "Unsuitable" ~ 0,
-    Habitat == "Marginal" ~ 1,
-    Habitat == "Tolerable" ~ 2,
-    Habitat == "Suitable" ~ 3)
-  ) %>%
-  arrange(level) 
-
-historicbaydatasummary$Habitat <- factor(historicbaydatasummary$Habitat, levels = c("Suitable", "Tolerable", "Marginal", "Unsuitable"))
-
-#write out for the app
-fwrite(historicbaydatasummary, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "historicbaydatasummary.csv", sep="")), row.names=FALSE)
-
-#I can make them as static ggplots, or I can make them as interactive plotly charts. I'll do both
-
-#static chart first:
-
-# ggplot(historicbaydata_summary, aes(fill=Habitat, y=percent, x=as.factor(year), group=level)) + 
-#   geom_bar(position='stack', stat='identity')+
-#   theme_bw()+
-#   scale_fill_manual(values=palette, breaks=breaks)+
-#   theme(text = element_text(size = 15),
-#         legend.text = element_text(size=10),
-#         legend.title = element_text(size=11),
-#         legend.position = "bottom")+
-#   xlab("Year")+
-#   ylab("Percent of Habitat")
-
-#interactive plotly
-
-historicbaydata_wholebay_plot <- 
-  plot_ly(historicbaydatasummary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
-          type = 'bar') %>%
-  layout(title = 'Whole Bay Suitability for the Previous Ten Years',
-         yaxis = list(title = 'Percent of Habitat'),
-         barmode = 'stack')
-historicbaydata_wholebay_plot
-
-saveWidget(as_widget(historicbaydata_wholebay_plot), paste(here("App Figures"),"/LastTenYears_WholeBay",monthdate,thisyear,".html", sep=""))
-
-#and likewise, the fishing hotspots:
-
-#again, first we sort suitability
-historicbaydata_fishingareas_summary <- historicbaydata_fishingareas %>%
-  mutate(Habitat = case_when(
-    Wtemp>marginaltemp | DO<marginalDO ~ "Unsuitable",
-    Wtemp<=marginaltemp & Wtemp>tolerabletemp | DO>=marginalDO & DO<tolerableDO ~ "Marginal",
-    Wtemp<=tolerabletemp & Wtemp>suitabletemp | DO>=tolerableDO & DO<suitableDO ~ "Tolerable",
-    Wtemp<=suitabletemp | DO>=suitableDO ~ "Suitable",
-    TRUE ~ NA)) %>%
-  mutate(uniqueID = paste(UTMX, UTMY, sep= " ") )%>%
-  group_by(uniqueID) %>%
-  filter(Sdepth == max(Sdepth, na.rm=T)) %>%
-  group_by(year, Habitat) %>%
-  summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
-  mutate(percent = round(volume/sum(volume)*100, 2)) %>%
-  mutate(color = case_when(
-    Habitat == "Unsuitable" ~ "black",
-    Habitat == "Marginal" ~ "orange",
-    Habitat == "Tolerable" ~ "yellow",
-    Habitat == "Suitable" ~ "dodgerblue")) %>%
-  mutate(level = case_when(
-    Habitat == "Unsuitable" ~ 0,
-    Habitat == "Marginal" ~ 1,
-    Habitat == "Tolerable" ~ 2,
-    Habitat == "Suitable" ~ 3)
-  ) %>%
-  arrange(level) 
-
-historicbaydata_fishingareas_summary$Habitat <- factor(historicbaydata_fishingareas_summary$Habitat, levels = c("Suitable", "Tolerable", "Marginal", "Unsuitable"))
-
-fwrite(historicbaydata_fishingareas_summary, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "historicbaydatafishingareassummary.csv", sep="")), row.names=FALSE)
-
-#static chart first:
-
-# ggplot(historicbaydata_fishingareas_summary, aes(fill=Habitat, y=percent, x=as.factor(year), group=level)) + 
-#   geom_bar(position='stack', stat='identity')+
-#   theme_bw()+
-#   scale_fill_manual(values=palette, breaks=breaks)+
-#   theme(text = element_text(size = 15),
-#         legend.text = element_text(size=10),
-#         legend.title = element_text(size=11),
-#         legend.position = "bottom")+
-#   xlab("Year")+
-#   ylab("Percent of Habitat")
-
-#interactive plotly
-
-historicbaydata_fishingareas_plot <- 
-  plot_ly(historicbaydata_fishingareas_summary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
-          type = 'bar') %>%
-  layout(title = 'Fishing Hot Spot Suitability for the Previous Ten Years',
-         yaxis = list(title = 'Percent of Habitat'),
-         barmode = 'stack')
-historicbaydata_fishingareas_plot
-
-saveWidget(as_widget(historicbaydata_fishingareas_plot), paste(here("App Figures"),"/LastTenYears_FishingAreas",monthdate,thisyear,".html", sep=""))
-
-###############################################################################
-
-#Andrew also has the center channel figure:
-
-#bring in cross section file:
+#bring in cross section file
 crosssectionmain<-read_csv("mainchannelpointsCLEAN.csv")
 crosssectionmain<-crosssectionmain[c("UTMX","UTMY")]
 crosssectionmain$keep<-"YES"
 
+#df organization and calculate distance from mouth
 names(mddatathiscruise)[names(mddatathiscruise) == "lat"] <- "UTMX"
 names(mddatathiscruise)[names(mddatathiscruise) == "long"] <- "UTMY"
 mainchanneldata<-merge(mddatathiscruise,crosssectionmain,by=c("UTMX","UTMY"),allow.cartesian=TRUE)
 mainchanneldata<-unique(mainchanneldata)
-
 mainchanneldata$milesX<-mainchanneldata$UTMX*0.000621371
 mainchanneldata$milesY<-mainchanneldata$UTMY*0.000621371
 mainchanneldata$distfrommouth<-mainchanneldata$milesY-min(mainchanneldata$milesY)
-
-mainchanneldata <- mainchanneldata %>%
-  mutate(color = case_when(
-  habitat == "Unsuitable" ~ "black",
-  habitat == "Marginal" ~ "orange",
-  habitat == "Tolerable" ~ "yellow",
-  habitat == "Suitable" ~ "dodgerblue",
-  habitat == NA ~ "grey90"))
 
 #write out for the app
 fwrite(mainchanneldata, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "mainchanneldata.csv", sep="")), row.names=FALSE)
@@ -546,7 +439,7 @@ fwrite(mainchanneldata, file = here("Striped-Bass-Habitat-Suitability", paste(mo
 #hand coding in the geographic labels
 labels <- read_csv("labels.csv")
 
-#organize labels:
+#organize labels
 labels_mainstem <- labels %>%
   filter(label == "bay") %>%
   mutate(milesY = y*0.000621371) %>%
@@ -554,6 +447,7 @@ labels_mainstem <- labels %>%
 
 fwrite(labels_mainstem, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "labels_mainstem.csv", sep="")), row.names=FALSE)
 
+#mainstem cross-section
 mainchannelplotly<-plot_ly()%>%
   config(displayModeBar=T, modeBarButtonsToRemove = c("zoom", "autoScale2d","toggleSpikelines","select2d","lasso2d")) %>%
   add_trace(x=mainchanneldata$distfrommouth ,y=mainchanneldata$Sdepth
@@ -576,23 +470,22 @@ mainchannelplotly
 
 saveWidget(as_widget(mainchannelplotly), paste(here("App Figures"),"/MainChannel",monthdate,thisyear,".html", sep=""))
 
-################################################################################
-
-#Potomac as well, seeing as it was missing from Mark's dashboard...
+##############Potomac cross-section
 
 crosssectionpotomac<-read.csv(here("potomacmainstem.csv"))
 crosssectionpotomac<-crosssectionpotomac[c("UTMX","UTMY")]
 crosssectionpotomac$keep<-"YES"
 
-#generating potomac axis labels
+#generating potomac axis labels, calculate distance from mouth
 potomacchanneldata<-merge(mddatathiscruise,crosssectionpotomac,by=c("UTMX", "UTMY"),allow.cartesian=TRUE)
 potomacchanneldata<-unique(potomacchanneldata)
-
 potomacchanneldata <- potomacchanneldata %>%
   mutate(milesx = UTMX*0.000621371,
          milesy = UTMY*0.000621371)
 potomacchanneldata <- potomacchanneldata %>%
   mutate(distfrommouth = milesy - min(potomacchanneldata$milesy, na.rm=T))
+
+fwrite(potomacchanneldata, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "potomacchanneldata.csv", sep="")), row.names=FALSE)
 
 #organize labels:
 labels_potomac <- labels %>%
@@ -602,18 +495,7 @@ labels_potomac <- labels %>%
 
 fwrite(labels_potomac, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "labels_potomac.csv", sep="")), row.names=FALSE)
 
-potomacchanneldata <- potomacchanneldata %>%
-  mutate(color = case_when(
-    habitat == "Unsuitable" ~ "black",
-    habitat == "Marginal" ~ "orange",
-    habitat == "Tolerable" ~ "yellow",
-    habitat == "Suitable" ~ "dodgerblue",
-    habitat == NA ~ "grey90"))
-
-fwrite(potomacchanneldata, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "potomacchanneldata.csv", sep="")), row.names=FALSE)
-
-#potomac still needs filling in
-
+#potomac cross-section
 potomacchannelplotly <- plot_ly()%>%
   config(displayModeBar=T, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d")) %>%
   add_trace(x=potomacchanneldata$distfrommouth,y=potomacchanneldata$Sdepth
@@ -637,10 +519,90 @@ potomacchannelplotly
 
 saveWidget(as_widget(potomacchannelplotly), paste(here("App Figures"),"/PotomicChannel",monthdate,thisyear,".html", sep=""))
 
-###############################################################################
+####################################################################################
+
+#Stacked bar plots 
+
+################Whole Bay
+
+#calculate summary for entire water column to update the historical means:
+historicbay_wholebay_wholecolumnsummary <- historicbaydata %>%
+  group_by(year, Habitat) %>%
+  summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
+  mutate(percent = round(volume/sum(volume)*100, 2))
+
+#making our summary sheets for pie charts
+#first we sort suitability
+historicbaydatasummary <- historicbaydata %>%
+  group_by(uniqueID) %>%
+  filter(Sdepth == max(Sdepth, na.rm=T)) %>%
+  group_by(year, Habitat) %>%
+  summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
+  mutate(percent = round(volume/sum(volume)*100, 2))
+
+#code the habitat suitability order
+historicbaydatasummary$Habitat <- factor(historicbaydatasummary$Habitat, levels = c("Suitable", "Tolerable", "Marginal", "Unsuitable"))
+
+#write out for the app
+fwrite(historicbaydatasummary, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "historicbaydatasummary.csv", sep="")), row.names=FALSE)
+
+#plotly
+historicbaydata_wholebay_plot <- 
+  plot_ly(historicbaydatasummary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
+          type = 'bar') %>%
+  layout(title = 'Whole Bay Suitability for the Previous Ten Years',
+         yaxis = list(title = 'Percent of Habitat'),
+         barmode = 'stack',
+         annotations = list(x = 0.5, y = -0.1, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
+                            showarrow = F, xref='paper', yref='paper', 
+                            xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                            font=list(size=12)))
+historicbaydata_wholebay_plot
+
+saveWidget(as_widget(historicbaydata_wholebay_plot), paste(here("App Figures"),"/LastTenYears_WholeBay",monthdate,thisyear,".html", sep=""))
+
+##############Fishing hotspots:
+
+#calculate summary for entire water column to update the historical means:
+historicbay_fishingareas_wholecolumnsummary <- historicbaydata_fishingareas %>%
+  group_by(year, Habitat) %>%
+  summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
+  mutate(percent = round(volume/sum(volume)*100, 2))
+
+#bottoms for the plot
+#again, first we sort suitability
+historicbaydata_fishingareas_summary <- historicbaydata_fishingareas %>%
+  group_by(uniqueID) %>%
+  filter(Sdepth == max(Sdepth, na.rm=T)) %>%
+  group_by(year, Habitat) %>%
+  summarize(volume = sum(volume_m, na.rm=TRUE)/1e+9) %>%
+  mutate(percent = round(volume/sum(volume)*100, 2))
+
+#code the habitat suitability order
+historicbaydata_fishingareas_summary$Habitat <- factor(historicbaydata_fishingareas_summary$Habitat, levels = c("Suitable", "Tolerable", "Marginal", "Unsuitable"))
+
+fwrite(historicbaydata_fishingareas_summary, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "historicbaydatafishingareassummary.csv", sep="")), row.names=FALSE)
+
+#plotly
+historicbaydata_fishingareas_plot <- 
+  plot_ly(historicbaydata_fishingareas_summary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
+          type = 'bar') %>%
+  layout(title = 'Fishing Hot Spot Suitability for the Previous Ten Years',
+         yaxis = list(title = 'Percent of Habitat'),
+         barmode = 'stack',
+         annotations = list(x = 0.5, y = -0.1, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
+                            showarrow = F, xref='paper', yref='paper', 
+                            xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                            font=list(size=12)))
+historicbaydata_fishingareas_plot
+
+saveWidget(as_widget(historicbaydata_fishingareas_plot), paste(here("App Figures"),"/LastTenYears_FishingAreas",monthdate,thisyear,".html", sep=""))
+
+#################################################################################
 
 #Historic Percent Suitable Volume
-#Fishing Hot Spots:
+
+###########Fishing Hot Spots:
 
 #historic suitability -- based on prev years, no modification needed
 historicalmeans_hotspots<-read_csv("historicalmeans85-24_hotspots.csv")
@@ -679,11 +641,7 @@ historicmeans_hs_plot <-ggplot(historicalmeans_hs, aes(x=as.factor(monthseq)))+
 historicmeans_hs_plot
 ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=here("App Figures"), width = 10, height = 6)
 
-######
-
-#Entire Bay:
-
-#Fishing Hot Spots:
+#######Entire Bay:
 
 #historic suitability -- based on prev years, no modification needed
 historicalmeans_wholebay<-read_csv("historicalmeans85-24_wholebay.csv")
