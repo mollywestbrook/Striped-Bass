@@ -30,10 +30,10 @@ library(ragg)
 
 #### UPDATE THIS WITH CURRENT CRUISE FILE
 
-thiscruise <- "BAY891.csv"
+thiscruise <- "BAY892.csv"
 
 #late or early? Update
-lateorearly <- "Late"
+lateorearly <- "Early"
 
 #########################################
 
@@ -403,7 +403,7 @@ server <- function(input, output, session) {
                       ax = 20,
                       ay = -30,
                       textposition="top" )%>%
-      layout(xaxis=list(title="Distance from mouth of Bay (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
+      layout(xaxis=list(title="Distance from MD-VA Line (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
       layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
       layout(title = 'Bay Mainstem Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
     mainchannelplotly
@@ -446,11 +446,12 @@ server <- function(input, output, session) {
       layout(title = paste('Fishing Area Habitat Suitability for', lateorearly, monthname, 'Ten Year History', sep = " "),
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack',
-             margin = list(b = 100),
-             annotations = list(x = 1.1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
-                                showarrow = F, xref='paper', yref='paper', 
-                                xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                                font=list(size=11)))
+             margin = list(b = 100)
+             # ,annotations = list(x = 1.1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
+             #                    showarrow = F, xref='paper', yref='paper', 
+             #                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
+             #                    font=list(size=11))
+             )
   })
   
   output$HotSpotVolume <- renderPlot({
@@ -481,11 +482,12 @@ server <- function(input, output, session) {
       layout(title = paste('Whole Bay Habitat Suitability for', lateorearly, monthname, 'Ten Year History', sep = " "),
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack',
-             margin = list(b = 100),
-             annotations = list(x = 1.1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
-                                showarrow = F, xref='paper', yref='paper', 
-                                xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                                font=list(size=11)))
+             margin = list(b = 100)
+             # ,annotations = list(x = 1.1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
+             #                    showarrow = F, xref='paper', yref='paper', 
+             #                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
+             #                    font=list(size=11))
+             )
   })
   
   output$WholeBayVolume <- renderPlot({

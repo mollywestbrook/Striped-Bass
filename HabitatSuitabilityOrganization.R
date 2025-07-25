@@ -18,7 +18,7 @@ library(ragg)
 #Define Variables
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv("BAY891.csv")
+rawcruisedata<-read_csv("BAY892.csv")
 
 ###Ensure the data is confined to a single month, otherwise filter out extraneous dates
 startdate<-min(rawcruisedata$Date)
@@ -281,7 +281,7 @@ fetcheveryyearsdata <- function (currentyear) {
   )
 }
 
-historicbaydata <- sapply(yearrange, fetcheveryyearsdata)
+historicbaydata <- lapply(yearrange, fetcheveryyearsdata)
 historicbaydata <- do.call(rbind.data.frame, historicbaydata) #this takes the list of the dfs we generated and makes it a big df
 names(historicbaydata) <- c("Segment", "UTMX","UTMY", "Sdepth","volume_m","DO", "Wtemp", "year")
 #rm(DO, DOdata, DOt, wtemp, wtempdata, wtempt)
@@ -327,7 +327,7 @@ historicbaydata_fishingareas <- left_join(fishingareacoords_df, historicbaydata,
 #Now we want a beautiful leaflet map. 
 #It's going to have 3 layers: the fishing hotspots, the suitability of the hotspots, and the suitability of the whole bay
 
-#Filter surface for the map:
+#Filter bottom for the map:
 fishingareacoords.dd_bottom <- fishingareacoords.dd %>%
   group_by(uniqueID) %>% 
   filter(Sdepth == max(Sdepth, na.rm=T))
@@ -355,9 +355,9 @@ baymap
 
 #commented for subsequent runs; st_write doesn't overwrite, so uncomment this line on first run
 
-# st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
-# st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
-# st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
+ # st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
+ # st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
+ # st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
 
 ###################################################################################
 
@@ -387,7 +387,7 @@ wholebaysummaryplot <- plot_ly(wholebaybottomsummary, labels = ~habitat, values 
          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
 wholebaysummaryplot
 
-saveWidget(as_widget(wholebaysummaryplot), paste(here("App Figures"),"/PieChart_WholeBay",monthdate,thisyear,".html", sep=""))
+saveWidget(as_widget(wholebaysummaryplot), paste(here("AppFigures"),"/PieChart_WholeBay",monthdate,thisyear,".html", sep=""))
 
 ################Hot Spots
 
@@ -411,7 +411,7 @@ fishinghotspotsplot <- plot_ly(fishinghotspotsummary, labels = ~habitat, values 
          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
 fishinghotspotsplot
 
-saveWidget(as_widget(fishinghotspotsplot), paste(here("App Figures"),"/PieChart_FishingHotspots",monthdate,thisyear,".html", sep=""))
+saveWidget(as_widget(fishinghotspotsplot), paste(here("AppFigures"),"/PieChart_FishingHotspots",monthdate,thisyear,".html", sep=""))
 
 ###################################################################################
 
@@ -468,7 +468,7 @@ mainchannelplotly<-plot_ly()%>%
   layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F))
 mainchannelplotly
 
-saveWidget(as_widget(mainchannelplotly), paste(here("App Figures"),"/MainChannel",monthdate,thisyear,".html", sep=""))
+saveWidget(as_widget(mainchannelplotly), paste(here("AppFigures"),"/MainChannel",monthdate,thisyear,".html", sep=""))
 
 ##############Potomac cross-section
 
@@ -517,7 +517,7 @@ potomacchannelplotly <- plot_ly()%>%
   layout(title = 'Potomac River Main Channel Cross Section')
 potomacchannelplotly
 
-saveWidget(as_widget(potomacchannelplotly), paste(here("App Figures"),"/PotomicChannel",monthdate,thisyear,".html", sep=""))
+saveWidget(as_widget(potomacchannelplotly), paste(here("AppFigures"),"/PotomacChannel",monthdate,thisyear,".html", sep=""))
 
 ####################################################################################
 
@@ -559,7 +559,7 @@ historicbaydata_wholebay_plot <-
                             font=list(size=12)))
 historicbaydata_wholebay_plot
 
-saveWidget(as_widget(historicbaydata_wholebay_plot), paste(here("App Figures"),"/LastTenYears_WholeBay",monthdate,thisyear,".html", sep=""))
+saveWidget(as_widget(historicbaydata_wholebay_plot), paste(here("AppFigures"),"/LastTenYears_WholeBay",monthdate,thisyear,".html", sep=""))
 
 ##############Fishing hotspots:
 
@@ -596,11 +596,14 @@ historicbaydata_fishingareas_plot <-
                             font=list(size=12)))
 historicbaydata_fishingareas_plot
 
-saveWidget(as_widget(historicbaydata_fishingareas_plot), paste(here("App Figures"),"/LastTenYears_FishingAreas",monthdate,thisyear,".html", sep=""))
+saveWidget(as_widget(historicbaydata_fishingareas_plot), paste(here("AppFigures"),"/LastTenYears_FishingAreas",monthdate,thisyear,".html", sep=""))
 
 #################################################################################
 
 #Historic Percent Suitable Volume
+
+#note: make sure to update the csvs of percentsuitable_hotspots_currentyear and percentsuitable_wholebay_currentyear
+#by taking the percent suitable volume of the current year as calculated in either the pie chart or stacked bar plot
 
 ###########Fishing Hot Spots:
 
@@ -639,7 +642,7 @@ historicmeans_hs_plot <-ggplot(historicalmeans_hs, aes(x=as.factor(monthseq)))+
         legend.title=element_text(size=11),
         axis.text.x=element_text(angle=45, hjust=1))
 historicmeans_hs_plot
-ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=here("App Figures"), width = 10, height = 6)
+ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=here("AppFigures"), width = 10, height = 6)
 
 #######Entire Bay:
 
@@ -678,6 +681,6 @@ historicmeans_wb_plot <-ggplot(historicalmeans_wb, aes(x=as.factor(monthseq)))+
         legend.title=element_text(size=11),
         axis.text.x=element_text(angle=45, hjust=1))
 historicmeans_wb_plot
-ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=here("App Figures"), width = 10, height = 6)
+ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=here("AppFigures"), width = 10, height = 6)
 
 
