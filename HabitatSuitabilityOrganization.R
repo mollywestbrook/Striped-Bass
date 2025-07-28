@@ -324,6 +324,9 @@ historicbaydata_fishingareas <- left_join(fishingareacoords_df, historicbaydata,
 
 ### FIGURES ###
 
+#Note: I don't save these figures anymore
+#Mostly because it takes up space and is unnecessary. But if needed, uncomment the 'saveWidget' functions.
+
 #Now we want a beautiful leaflet map. 
 #It's going to have 3 layers: the fishing hotspots, the suitability of the hotspots, and the suitability of the whole bay
 
@@ -387,7 +390,7 @@ wholebaysummaryplot <- plot_ly(wholebaybottomsummary, labels = ~habitat, values 
          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
 wholebaysummaryplot
 
-saveWidget(as_widget(wholebaysummaryplot), paste(here("AppFigures"),"/PieChart_WholeBay",monthdate,thisyear,".html", sep=""))
+#saveWidget(as_widget(wholebaysummaryplot), paste(here("AppFigures"),"/PieChart_WholeBay",monthdate,thisyear,".html", sep=""))
 
 ################Hot Spots
 
@@ -411,7 +414,7 @@ fishinghotspotsplot <- plot_ly(fishinghotspotsummary, labels = ~habitat, values 
          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
 fishinghotspotsplot
 
-saveWidget(as_widget(fishinghotspotsplot), paste(here("AppFigures"),"/PieChart_FishingHotspots",monthdate,thisyear,".html", sep=""))
+#saveWidget(as_widget(fishinghotspotsplot), paste(here("AppFigures"),"/PieChart_FishingHotspots",monthdate,thisyear,".html", sep=""))
 
 ###################################################################################
 
@@ -468,7 +471,7 @@ mainchannelplotly<-plot_ly()%>%
   layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F))
 mainchannelplotly
 
-saveWidget(as_widget(mainchannelplotly), paste(here("AppFigures"),"/MainChannel",monthdate,thisyear,".html", sep=""))
+#saveWidget(as_widget(mainchannelplotly), paste(here("AppFigures"),"/MainChannel",monthdate,thisyear,".html", sep=""))
 
 ##############Potomac cross-section
 
@@ -517,7 +520,7 @@ potomacchannelplotly <- plot_ly()%>%
   layout(title = 'Potomac River Main Channel Cross Section')
 potomacchannelplotly
 
-saveWidget(as_widget(potomacchannelplotly), paste(here("AppFigures"),"/PotomacChannel",monthdate,thisyear,".html", sep=""))
+#saveWidget(as_widget(potomacchannelplotly), paste(here("AppFigures"),"/PotomacChannel",monthdate,thisyear,".html", sep=""))
 
 ####################################################################################
 
@@ -559,7 +562,7 @@ historicbaydata_wholebay_plot <-
                             font=list(size=12)))
 historicbaydata_wholebay_plot
 
-saveWidget(as_widget(historicbaydata_wholebay_plot), paste(here("AppFigures"),"/LastTenYears_WholeBay",monthdate,thisyear,".html", sep=""))
+#saveWidget(as_widget(historicbaydata_wholebay_plot), paste(here("AppFigures"),"/LastTenYears_WholeBay",monthdate,thisyear,".html", sep=""))
 
 ##############Fishing hotspots:
 
@@ -596,7 +599,7 @@ historicbaydata_fishingareas_plot <-
                             font=list(size=12)))
 historicbaydata_fishingareas_plot
 
-saveWidget(as_widget(historicbaydata_fishingareas_plot), paste(here("AppFigures"),"/LastTenYears_FishingAreas",monthdate,thisyear,".html", sep=""))
+#saveWidget(as_widget(historicbaydata_fishingareas_plot), paste(here("AppFigures"),"/LastTenYears_FishingAreas",monthdate,thisyear,".html", sep=""))
 
 #################################################################################
 
@@ -642,7 +645,8 @@ historicmeans_hs_plot <-ggplot(historicalmeans_hs, aes(x=as.factor(monthseq)))+
         legend.title=element_text(size=11),
         axis.text.x=element_text(angle=45, hjust=1))
 historicmeans_hs_plot
-ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=here("AppFigures"), width = 10, height = 6)
+
+#ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=here("AppFigures"), width = 10, height = 6)
 
 #######Entire Bay:
 
@@ -681,6 +685,7 @@ historicmeans_wb_plot <-ggplot(historicalmeans_wb, aes(x=as.factor(monthseq)))+
         legend.title=element_text(size=11),
         axis.text.x=element_text(angle=45, hjust=1))
 historicmeans_wb_plot
-ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=here("AppFigures"), width = 10, height = 6)
+
+#ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=here("AppFigures"), width = 10, height = 6)
 
 
