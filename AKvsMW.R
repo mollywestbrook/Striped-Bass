@@ -6,8 +6,8 @@ library(data.table)
 
 ###Cruise Sheets
 
-cruisedata_ak<-read_csv("BAY892.csv")
-cruisedata_mw<-read_csv("BAY892_mw.csv")
+cruisedata_ak<-read_csv("BAY893.csv")
+cruisedata_mw<-read_csv("BAY893_mw.csv")
 
 #note: m's sheet is in F, quick convert to C:
 cruisedata_mw$Wtemp <- (cruisedata_mw$Wtemp - 32)/1.8
@@ -16,7 +16,7 @@ cruisedata_mw$Wtemp <- (cruisedata_mw$Wtemp - 32)/1.8
 setdiff(cruisedata_ak$Station, cruisedata_mw$Station)
 setdiff(cruisedata_ak$Date, cruisedata_mw$Date)
 setdiff(cruisedata_ak$Sdepth, cruisedata_mw$Sdepth)
-setdiff(cruisedata_ak$Wtemp, cruisedata_mw$Wtemp)
+setdiff(cruisedata_ak$Wtemp, cruisedata_mw$tempF) #note: MW stored F temps in separate col
 setdiff(cruisedata_ak$Ph, cruisedata_mw$Ph)
 setdiff(cruisedata_ak$DO, cruisedata_mw$DO)
 setdiff(cruisedata_ak$Spcond, cruisedata_mw$Spcond)
@@ -25,8 +25,10 @@ setdiff(cruisedata_ak$Cruise, cruisedata_mw$Cruise)
 setdiff(cruisedata_ak$SECCHI, cruisedata_mw$SECCHI)
 
 ###DO Sheets
-DOdata_ak <- read_csv("DO_2025_07full_EARLY.txt")
-DOdata_mw <- read_csv("DO_2025_07full_EARLY_mw.txt")
+DOdata_ak <- read_csv("DO_2025_07full_LATE.txt")
+DOdata_mw <- read_csv("DO_2025_07full_LATE_mw.txt")
+
+#DOdata_mw_new <- read_csv("DO_2025_07full_EARLY_mw_updated.txt")
 
 #convert to vertical, then we'll setdiff:
 DO <- DOdata_ak 
@@ -53,7 +55,9 @@ DOt_mw <- DO %>%
   select("Segment", "UTM_X","UTM_Y", "Sdepth","volume_m","DO")
 
 #and check the cols:
-setdiff(DOt_ak$Segment, DOt_mw$Segment)
+setdiff(DOt_ak$Segment, DOt_mw$Segment) 
+#setdiff(DOt_mw$Segment, DOt_ak$Segment) 
+
 setdiff(DOt_ak$UTM_X, DOt_mw$UTM_X)
 setdiff(DOt_ak$UTM_Y, DOt_mw$UTM_Y)
 setdiff(DOt_ak$Sdepth, DOt_mw$Sdepth)
@@ -63,8 +67,8 @@ setdiff(DOt_ak$DO, DOt_mw$DO)
 
 ###Temp Sheets
 
-Wtempdata_ak <- read_csv("WTEMP_2025_07full_EARLY.txt")
-Wtempdata_mw <- read_csv("WTEMP_2025_07full_EARLY_mw.txt")
+Wtempdata_ak <- read_csv("WTEMP_2025_07full_LATE.txt")
+Wtempdata_mw <- read_csv("WTEMP_2025_07full_LATE_mw.txt")
 
 wtemp<-Wtempdata_ak
 wtemp[wtemp==-9] <- NA
@@ -100,6 +104,14 @@ setdiff(wtempt_ak$wtemp, wtempt_mw$wtemp)
 #if we round AK's data, will it be the same?
 wtempt_ak$wtemp <- round(wtempt_ak$wtemp, 1)
 setdiff(wtempt_ak$wtemp, wtempt_mw$wtemp)
+
+#one more check on the raw DO and Temp sheets for the segment mismatch:
+setdiff(DOdata_mw$Segment, DOdata_ak$Segment)
+#output: "CB5MH" "POCMH" "TANMH"
+
+setdiff(Wtempdata_mw$Segment, Wtempdata_ak$Segment)
+#output: "CB5MH" "POCMH" "TANMH"
+
 
 
 

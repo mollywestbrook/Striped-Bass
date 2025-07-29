@@ -1,5 +1,10 @@
 #Habitat Suitability for Striped Bass
 
+#before/during each run
+#update cruise line in 26
+#on first run, uncomment lines 369-371 for shape file writes
+#update percentsuitable csvs in main directory with the current month's percent suitable habitat
+
 #This script will generate the data tables and figures necessary for a subsequent app file
 
 #Libraries
@@ -18,7 +23,10 @@ library(ragg)
 #Define Variables
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv("BAY892.csv")
+rawcruisedata<-read_csv("BAY893.csv")
+
+#save a copy to the stripd bass habitat:
+fwrite(rawcruisedata, file = here("Striped-Bass-Habitat-Suitability", "BAY893.csv", row.names=FALSE))
 
 ###Ensure the data is confined to a single month, otherwise filter out extraneous dates
 startdate<-min(rawcruisedata$Date)
