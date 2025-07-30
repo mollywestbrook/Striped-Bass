@@ -26,7 +26,7 @@ library(ragg)
 rawcruisedata<-read_csv("BAY893.csv")
 
 #save a copy to the stripd bass habitat:
-fwrite(rawcruisedata, file = here("Striped-Bass-Habitat-Suitability", "BAY893.csv", row.names=FALSE))
+#fwrite(rawcruisedata, file = here("Striped-Bass-Habitat-Suitability"), "BAY893.csv", row.names=FALSE)
 
 ###Ensure the data is confined to a single month, otherwise filter out extraneous dates
 startdate<-min(rawcruisedata$Date)
