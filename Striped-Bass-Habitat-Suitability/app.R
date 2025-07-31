@@ -216,22 +216,22 @@ server <- function(input, output, session) {
   #app instructions
   output$HowToUse <- renderUI({
     HTML(paste(
-      "<p>This dashboard provides habitat suitability information for striped bass in the Chesapeake Bay.</p>",
+      "<p>This dashboard provides the most recent striped bass habitat suitability information 
+      based on bottom dissolved oxygen conditions and surface water temperatures measured during 
+      Maryland DNR’s monthly (rivers) and twice monthly (Chesapeake Bay) summer monitoring cruises. 
+      Low bottom dissolved oxygen and high surface temperatures can constrict the habitable areas 
+      as well as produce other stressors on the ecosystem.</p>",
       
-      "<p>To understand how bass habitat may change over the year, select 'Striped Bass Squeeze' in the panel to the right. </p>",
-      
-      "<p> The following list walks through each panel of information to best predict where you may find striped bass at this time of the year. </p>",
+      "<p>The following list walks through each panel of information to best predict where you may find striped bass from the most recent monitoring data.</p>",
       
       "<ul>",
-      "<li> The map displays up to three layers: fishing area locations, habitat suitability in fishing areas, and habitat suitability across the entire bay.</li>",
-      "<li> By default, the fishing area habitat suitability is displayed. </li>",
-      "<li> To activate the fishing area locations, you may check 'Fishing Areas' in the layer panel in the upper right corner of the map. You can display these over the whole bay data, or just the fishing area data. </li>",
-      "<li> Select which layer (fishing areas or the whole bay) you'd like to see by selecting the layer under the 'Toggle to Change' tab.</li>",
-      "<li> You can also filter locations by suitability criteria by selecting the slice of the displayed summary pie chart to display only locations corresponding to that suitability. </li>",
-      "<li> With this, anglers can find the best possible locations for fishing for bass based on measured data!</li>",
-      "<li> For legend information on how we define suitable habitat for striped bass, see the legend in the panel to the right. </li>",
-      "<li> The map displays bottom data (<1ft) only. Beneath the map find the main bay and Potomac river depth habitat suitability.</li>",
-      "<li> Finally, find how this year's data corresponds to historical data at the bottom of the app.</li>",
+      "<li> The map displays up to three layers: common fishing locations, habitat suitability in fishing areas, and habitat suitability across the entire bay.</li>",
+      "<li> By default, the fishing area habitat suitability is displayed. Select the other layers as desired from the upper right box on the map. 
+      Note: the whole bay suitability layer will take 30 seconds or longer to load and display. </li>",
+      "<li> You can also filter locations on the map by suitability criteria, by selecting the corresponding slice on the summary pie chart to the right of the map. </li>",
+      "<li> For legend information on how we define suitable habitat for striped bass, see the legend in the panel to the right.</li>",
+      "<li> The map displays bottom data only. Beneath the map find the main bay channel and Potomac river channel depth habitat suitability cross sections.</li>",
+      "<li> Finally, find how this year's data corresponds to historical results in the bar charts at the bottom of the app.</li>",
       "</ul>",
       
       "For more information, see the links to other DNR resources in the panel to the right.",
