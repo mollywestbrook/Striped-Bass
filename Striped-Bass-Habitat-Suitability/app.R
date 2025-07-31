@@ -152,7 +152,13 @@ ui <- fluidPage(
                   ")),
   
   # Application title
-  titlePanel(paste("Striped Bass Habitat Suitability for", lateorearly, monthname, thisyear, sep=' ')),
+  tags$div(
+    style = "display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 20px;",
+    tags$h2(paste("Maryland Striped Bass Habitat Suitability for", lateorearly, monthname, thisyear, sep=' '), style = "margin: 0;"),
+    tags$img(src = "DNR_logo_final.png", height = "60px")
+  ),
+  
+  hr(),
   
   layout_columns(
     accordion(
@@ -210,6 +216,12 @@ ui <- fluidPage(
 #This generates all the data and figures
 
 server <- function(input, output, session) {
+  
+  #render logo
+  output$Logo <- renderImage({
+    filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'DNR_logo_final.png')))
+    list(src = filename, alt = "DNR Logo", width=100)
+  }, deleteFile = FALSE)
   
   #this first section contains the app instructions + information
   
