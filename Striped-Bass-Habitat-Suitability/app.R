@@ -157,7 +157,7 @@ ui <- fluidPage(
   layout_columns(
     accordion(
       accordion_panel(
-        title = "App Information and Instructions",
+        title = HTML(paste("<b>", "App Information and Instructions" ,"</b>")),
         layout_columns(
           card(
             card_header("App Instructions"),
@@ -175,7 +175,7 @@ ui <- fluidPage(
   ),
   
   card(
-    card_header("Chesapeake Bay Bottom Map"),
+    card_header(HTML(paste("<b>", "Chesapeake Bay Bottom Map" ,"</b>"))),
     fluidRow(
       column(8, leafletOutput("BayMap", height = 600)),
       column(4,
@@ -188,19 +188,19 @@ ui <- fluidPage(
   
   layout_columns(
     navset_card_tab(
-      nav_panel("Cross-Section of the Mainstem", plotlyOutput(outputId = 'WholeBayCrossSection')), 
-      nav_panel("Cross-Section of the Potomac", plotlyOutput(outputId = 'PotomacCrossSection'))
+      nav_panel(HTML(paste("<b>", "Cross-Section of the Mainstem" ,"</b>")), plotlyOutput(outputId = 'WholeBayCrossSection')), 
+      nav_panel(HTML(paste("<b>", "Cross-Section of the Potomac" ,"</b>")), plotlyOutput(outputId = 'PotomacCrossSection'))
     )
   ),
   
   layout_columns(
     navset_card_tab(
-      nav_panel("Fishing Area Habitat Suitability, Last 10 Yrs", plotlyOutput(outputId = "HotSpot10yrs")), 
-      nav_panel("Fishing Area Mean Habitat Suitability vs Historical Average", plotOutput(outputId = "HotSpotVolume"))
+      nav_panel(HTML(paste("<b>", "Fishing Area Habitat Suitability, Last 10 Yrs" ,"</b>")), plotlyOutput(outputId = "HotSpot10yrs")), 
+      nav_panel(HTML(paste("<b>", "Fishing Area Mean Habitat Suitability vs Historical Average" ,"</b>")), plotOutput(outputId = "HotSpotVolume"))
     ),
     navset_card_tab(
-      nav_panel("Whole Bay Habitat Suitability, Last 10 Yrs", plotlyOutput(outputId = "WholeBay10yrs")), 
-      nav_panel("Whole Bay Mean Habitat Suitability vs Historical Average", plotOutput(outputId = "WholeBayVolume"))
+      nav_panel(HTML(paste("<b>", "Whole Bay Habitat Suitability, Last 10 Yrs" ,"</b>")), plotlyOutput(outputId = "WholeBay10yrs")), 
+      nav_panel(HTML(paste("<b>", "Whole Bay Mean Habitat Suitability vs Historical Average" ,"</b>")), plotOutput(outputId = "WholeBayVolume"))
     )
   )
 )
