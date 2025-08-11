@@ -185,16 +185,16 @@ ui <- fluidPage(
     fluidRow(
       column(8, leafletOutput("BayMap", height = 600)),
       column(4,
-             selectInput("layer", "Toggle to Change Layer", choices = c("Fishing Area Habitat Suitability", "Whole Bay Habitat Suitability"), selected = "Fishing Area Habitat Suitability"),
+             selectInput("layer", "Toggle to Change Layer", choices = c("Fishing Area Habitat Suitability", "Maryland Bay Habitat Suitability"), selected = "Fishing Area Habitat Suitability"),
              conditionalPanel("input.layer == 'Fishing Area Habitat Suitability'", plotlyOutput("HotSpotPie")),
-             conditionalPanel("input.layer == 'Whole Bay Habitat Suitability'", plotlyOutput("WholeBayPie"))
+             conditionalPanel("input.layer == 'Maryland Bay Habitat Suitability'", plotlyOutput("WholeBayPie"))
       )
     )
   ),
   
   layout_columns(
     navset_card_tab(
-      nav_panel(HTML(paste("<b>", "Cross-Section of the Mainstem" ,"</b>")), plotlyOutput(outputId = 'WholeBayCrossSection')), 
+      nav_panel(HTML(paste("<b>", "Cross-Section of the MD Mainstem" ,"</b>")), plotlyOutput(outputId = 'WholeBayCrossSection')), 
       nav_panel(HTML(paste("<b>", "Cross-Section of the Potomac" ,"</b>")), plotlyOutput(outputId = 'PotomacCrossSection'))
     )
   ),
@@ -205,8 +205,8 @@ ui <- fluidPage(
       nav_panel(HTML(paste("<b>", "Fishing Area Mean Habitat Suitability vs Historical Average" ,"</b>")), plotOutput(outputId = "HotSpotVolume"))
     ),
     navset_card_tab(
-      nav_panel(HTML(paste("<b>", "Whole Bay Habitat Suitability, Last 10 Yrs" ,"</b>")), plotlyOutput(outputId = "WholeBay10yrs")), 
-      nav_panel(HTML(paste("<b>", "Whole Bay Mean Habitat Suitability vs Historical Average" ,"</b>")), plotOutput(outputId = "WholeBayVolume"))
+      nav_panel(HTML(paste("<b>", "Maryland Bay Habitat Suitability, Last 10 Yrs" ,"</b>")), plotlyOutput(outputId = "WholeBay10yrs")), 
+      nav_panel(HTML(paste("<b>", "Maryland Bay Mean Habitat Suitability vs Historical Average" ,"</b>")), plotOutput(outputId = "WholeBayVolume"))
     )
   )
 )
@@ -239,7 +239,7 @@ server <- function(input, output, session) {
       "<ul>",
       "<li> The map displays up to three layers: common fishing locations, habitat suitability in fishing areas, and habitat suitability across the entire bay.</li>",
       "<li> By default, the fishing area habitat suitability is displayed. Select the other layers as desired from the upper right box on the map. 
-      Note: the whole bay suitability layer will take 30 seconds or longer to load and display. </li>",
+      Note: the Maryland bay suitability layer will take 30 seconds or longer to load and display. </li>",
       "<li> You can also filter locations on the map by suitability criteria, by selecting the corresponding slice on the summary pie chart to the right of the map. </li>",
       "<li> For legend information on how we define suitable habitat for striped bass, see the legend in the panel to the right.</li>",
       "<li> The map displays bottom data only. Beneath the map find the main bay channel and Potomac river channel depth habitat suitability cross sections.</li>",
@@ -296,7 +296,7 @@ server <- function(input, output, session) {
                  customdata = ~color,
                  marker = list(colors = fishinghotspotssummary$color)) %>%
       config(displayModeBar=T, displaylogo=F, 
-             toImageButtonOptions= list(filename = 'Whole Bay Pie Chart', width = 500, height = 500)) %>%
+             toImageButtonOptions= list(filename = 'Fishing Area Pie Chart', width = 500, height = 500)) %>%
       layout(title = 'Fishing Area Habitat Suitability',
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
@@ -316,8 +316,8 @@ server <- function(input, output, session) {
                  customdata = ~color,
                  marker = list(colors = wholebaybottomsummary$color)) %>%
       config(displayModeBar=T, displaylogo=F, 
-             toImageButtonOptions= list(filename = 'Whole Bay Pie Chart', width = 500, height = 500)) %>%
-      layout(title = 'Whole Bay Habitat Suitability',
+             toImageButtonOptions= list(filename = 'Maryland Bay Pie Chart', width = 500, height = 500)) %>%
+      layout(title = 'Maryland Bay Habitat Suitability',
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     event_register(p, "plotly_click")
@@ -335,11 +335,11 @@ server <- function(input, output, session) {
       addCircles(
         data = fishingareacoords.dd_bottom, color = ~color, group = "Fishing Area Habitat Suitability",
         label = paste(fishingareacoords.dd_bottom$name, fishingareacoords.dd_bottom$Sdepth, "ft", sep=" ")) %>%
-      addCircles(data = mddatathiscruise.dd_bottom, color = ~color, group = "Whole Bay Habitat Suitability") %>%
+      addCircles(data = mddatathiscruise.dd_bottom, color = ~color, group = "Maryland Bay Habitat Suitability") %>%
       addLayersControl(
-        overlayGroups = c("Fishing Areas", "Fishing Area Habitat Suitability", "Whole Bay Habitat Suitability"),
+        overlayGroups = c("Fishing Areas", "Fishing Area Habitat Suitability", "Maryland Bay Habitat Suitability"),
         options = layersControlOptions(collapsed = FALSE)) %>%
-      hideGroup(c("Fishing Areas", "Whole Bay Habitat Suitability"))
+      hideGroup(c("Fishing Areas", "Maryland Bay Habitat Suitability"))
     baymap
   })
   
@@ -361,7 +361,7 @@ server <- function(input, output, session) {
     rv$selected_color <- NULL  # Optionally reset filter when switching layers
 
     leafletProxy("BayMap") %>%
-      hideGroup(c("Fishing Area Habitat Suitability", "Whole Bay Habitat Suitability")) %>%
+      hideGroup(c("Fishing Area Habitat Suitability", "Maryland Bay Habitat Suitability")) %>%
       showGroup(input$layer)
   })
   
@@ -373,7 +373,7 @@ server <- function(input, output, session) {
   }, {
     leafletProxy("BayMap") %>%
       clearGroup("Fishing Area Habitat Suitability") %>%
-      clearGroup("Whole Bay Habitat Suitability")
+      clearGroup("Maryland Bay Habitat Suitability")
 
     if (rv$active_layer == "Fishing Area Habitat Suitability") {
       pts <- fishingareacoords.dd_bottom
@@ -382,13 +382,13 @@ server <- function(input, output, session) {
       }
       leafletProxy("BayMap") %>%
         addCircles(data = pts, color = ~color, group = "Fishing Area Habitat Suitability", label = paste(fishingareacoords.dd_bottom$name, fishingareacoords.dd_bottom$Sdepth, "ft", sep=" "))
-    } else if (rv$active_layer == "Whole Bay Habitat Suitability") {
+    } else if (rv$active_layer == "Maryland Bay Habitat Suitability") {
       pts <- mddatathiscruise.dd_bottom
       if (!is.null(rv$selected_color)) {
         pts <- pts %>% filter(color == rv$selected_color)
       }
       leafletProxy("BayMap") %>%
-        addCircles(., data = pts, color = ~color, group = "Whole Bay Habitat Suitability", label = ~habitat)
+        addCircles(., data = pts, color = ~color, group = "Maryland Bay Habitat Suitability", label = ~habitat)
     }
 
   })
@@ -398,7 +398,7 @@ server <- function(input, output, session) {
   output$WholeBayCrossSection <- renderPlotly({
     mainchannelplotly<-plot_ly()%>%
       config(displayModeBar=T, modeBarButtonsToRemove = c("zoom", "autoScale2d","toggleSpikelines","select2d","lasso2d"),
-             toImageButtonOptions= list(filename = 'Whole Bay Cross-Section', width = 1000, height = 750)) %>%
+             toImageButtonOptions= list(filename = 'Maryland Bay Cross-Section', width = 1000, height = 750)) %>%
       add_trace(x=mainchanneldata$distfrommouth ,y=mainchanneldata$Sdepth
                 ,type='scatter',mode='markers'
                 ,text = paste0(mainchanneldata$Sdepth, "ft ", mainchanneldata$Wtemp, "F ", mainchanneldata$DO, "mg/L ")
@@ -417,7 +417,7 @@ server <- function(input, output, session) {
                       textposition="top" )%>%
       layout(xaxis=list(title="Distance from MD-VA Line (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
       layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
-      layout(title = 'Bay Mainstem Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
+      layout(title = 'MD Bay Mainstem Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
     mainchannelplotly
   })
   
@@ -490,8 +490,8 @@ server <- function(input, output, session) {
             type = 'bar') %>%
       config(displayModeBar=T, displaylogo=F, 
              modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d"),
-             toImageButtonOptions= list(filename = 'Whole Bay Habitat Suitability 10 Yrs', width = 800, height = 500)) %>%
-      layout(title = paste('Whole Bay Habitat Suitability for', lateorearly, monthname, 'Ten Year History', sep = " "),
+             toImageButtonOptions= list(filename = 'Maryland Bay Habitat Suitability 10 Yrs', width = 800, height = 500)) %>%
+      layout(title = paste('Maryland Bay Habitat Suitability for', lateorearly, monthname, 'Ten Year History', sep = " "),
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack',
              margin = list(b = 100)
