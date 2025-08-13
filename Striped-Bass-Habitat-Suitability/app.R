@@ -476,7 +476,7 @@ server <- function(input, output, session) {
       scale_color_manual(name="Suitability Dataset", values=c("dodgerblue", "darkgreen"), labels=c("Current Year", "Historic Mean (1985-24)"))+
       scale_fill_manual(name="Suitability Dataset", values=c("darkgreen"), labels=c("Historic Range (1985-24)"))+
       xlab("Month")+
-      ylab("Suitable Percent of Habitat")+
+      ylab("Percent of Suitable Habitat")+
       theme(text=element_text(size=14, family=verdana),
             legend.position=c(0.15, 0.2),
             legend.text=element_text(size=10),
@@ -512,7 +512,7 @@ server <- function(input, output, session) {
       scale_color_manual(name="Suitability Dataset", values=c("dodgerblue", "darkgreen"), labels=c("Current Year", "Historic Mean (1985-24)"))+
       scale_fill_manual(name="Suitability Dataset", values=c("darkgreen"), labels=c("Historic Range (1985-24)"))+
       xlab("Month")+
-      ylab("Suitable Percent of Habitat")+
+      ylab("Percent of Suitable Habitat")+
       theme(text=element_text(size=14, family=verdana),
             legend.position=c(0.15, 0.2),
             legend.text=element_text(size=10),
