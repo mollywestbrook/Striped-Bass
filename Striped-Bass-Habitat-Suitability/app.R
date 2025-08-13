@@ -139,6 +139,7 @@ mddatathiscruise.dd_bottom <- st_read(here("Striped-Bass-Habitat-Suitability", "
 #And all of the interactive features of the widgets
 
 ui <- fluidPage(
+  tags$head(includeHTML(here("stripedbassanalytics.html"))),
   theme = bs_theme(preset = "flatly"),
   
   #styling the info tab to be a light blue
@@ -201,12 +202,12 @@ ui <- fluidPage(
   
   layout_columns(
     navset_card_tab(
-      nav_panel(HTML(paste("<b>", "Fishing Area Habitat Suitability, Last 10 Yrs" ,"</b>")), plotlyOutput(outputId = "HotSpot10yrs")), 
-      nav_panel(HTML(paste("<b>", "Fishing Area Mean Habitat Suitability vs Historical Average" ,"</b>")), plotOutput(outputId = "HotSpotVolume"))
+      nav_panel(HTML(paste("<b>", "Fishing Area Mean Habitat Suitability vs Historical Average" ,"</b>")), plotOutput(outputId = "HotSpotVolume")),
+      nav_panel(HTML(paste("<b>", "Fishing Area Habitat Suitability, Last 10 Yrs" ,"</b>")), plotlyOutput(outputId = "HotSpot10yrs")) 
     ),
     navset_card_tab(
-      nav_panel(HTML(paste("<b>", "Maryland Bay Habitat Suitability, Last 10 Yrs" ,"</b>")), plotlyOutput(outputId = "WholeBay10yrs")), 
-      nav_panel(HTML(paste("<b>", "Maryland Bay Mean Habitat Suitability vs Historical Average" ,"</b>")), plotOutput(outputId = "WholeBayVolume"))
+      nav_panel(HTML(paste("<b>", "Maryland Bay Mean Habitat Suitability vs Historical Average" ,"</b>")), plotOutput(outputId = "WholeBayVolume")),
+      nav_panel(HTML(paste("<b>", "Maryland Bay Habitat Suitability, Last 10 Yrs" ,"</b>")), plotlyOutput(outputId = "WholeBay10yrs"))
     )
   )
 )
@@ -338,7 +339,7 @@ server <- function(input, output, session) {
       addCircles(data = mddatathiscruise.dd_bottom, color = ~color, group = "Maryland Bay Habitat Suitability") %>%
       addLayersControl(
         overlayGroups = c("Fishing Areas", "Fishing Area Habitat Suitability", "Maryland Bay Habitat Suitability"),
-        options = layersControlOptions(collapsed = FALSE)) %>%
+        options = layersControlOptions(collapsed = T)) %>%
       hideGroup(c("Fishing Areas", "Maryland Bay Habitat Suitability"))
     baymap
   })
