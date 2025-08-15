@@ -94,7 +94,7 @@ DOt <- DO %>%
   gather(key='layer', value='DO', 8:52) %>%
   mutate(layer = as.numeric(str_remove(layer, 'layer_'))) %>%
   arrange(ID) %>% 
-  mutate(Sdepth = (layer-1)*0.5)%>%
+  mutate(Sdepth = (layer-0.5)) %>%
   filter(!is.na(DO)) %>%
   select("Segment", "UTM_X","UTM_Y", "Sdepth","volume_m","DO")
 
@@ -107,7 +107,7 @@ wtempt <- wtemp %>%
   gather(key='layer', value='wtemp', 8:52) %>%
   mutate(layer = as.numeric(str_remove(layer, 'layer_'))) %>%
   arrange(ID) %>% 
-  mutate(Sdepth = (layer-1)*0.5)%>%
+  mutate(Sdepth = (layer-0.5)) %>%
   filter(!is.na(wtemp)) %>%
   select("Segment", "UTM_X","UTM_Y", "Sdepth","volume_m","wtemp")
 
@@ -252,7 +252,7 @@ fetcheveryyearsdata <- function (currentyear) {
         gather(key='layer', value='DO', 8:52) %>%
         mutate(layer = as.numeric(str_remove(layer, 'layer_'))) %>%
         arrange(ID) %>% 
-        mutate(Sdepth = (layer-1)*0.5)%>%
+        mutate(Sdepth = (layer-0.5)) %>%
         filter(!is.na(DO)) %>%
         select("Segment", "UTM_X","UTM_Y", "Sdepth","volume_m","DO")
       
@@ -265,7 +265,7 @@ fetcheveryyearsdata <- function (currentyear) {
         gather(key='layer', value='wtemp', 8:52) %>%
         mutate(layer = as.numeric(str_remove(layer, 'layer_'))) %>%
         arrange(ID) %>% 
-        mutate(Sdepth = (layer-1)*0.5)%>%
+        mutate(Sdepth = (layer-0.5)) %>%
         filter(!is.na(wtemp)) %>%
         select("Segment", "UTM_X","UTM_Y", "Sdepth","volume_m","wtemp")
       
@@ -376,7 +376,7 @@ baymap
 
 ################Whole Bay
 
-#calculate surface summary
+#calculate bottom summary
 wholebaybottomsummary <- mddatathiscruise.dd_bottom %>%
   st_drop_geometry() %>%
   group_by(habitat, color) %>%
@@ -648,7 +648,7 @@ historicmeans_hs_plot <-ggplot(historicalmeans_hs, aes(x=as.factor(monthseq)))+
   xlab("Month")+
   ylab("Suitable Percent of Habitat")+
   theme(text=element_text(size=14, family=verdana),
-        legend.position=c(0.15, 0.2),
+        legend.position = c(0.15, 0.2),
         legend.text=element_text(size=10),
         legend.title=element_text(size=11),
         axis.text.x=element_text(angle=45, hjust=1))
