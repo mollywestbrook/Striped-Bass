@@ -398,7 +398,7 @@ server <- function(input, output, session) {
   
   output$WholeBayCrossSection <- renderPlotly({
     mainchannelplotly<-plot_ly()%>%
-      config(displayModeBar=T, modeBarButtonsToRemove = c("zoom", "autoScale2d","toggleSpikelines","select2d","lasso2d"),
+      config(displayModeBar=T, displaylogo=F, modeBarButtonsToRemove = c("zoom", "autoScale2d","toggleSpikelines","select2d","lasso2d", "zoomin", "zoomOut", "pan"),
              toImageButtonOptions= list(filename = 'Maryland Bay Cross-Section', width = 1000, height = 750)) %>%
       add_trace(x=mainchanneldata$distfrommouth ,y=mainchanneldata$Sdepth
                 ,type='scatter',mode='markers'
@@ -424,7 +424,7 @@ server <- function(input, output, session) {
   
   output$PotomacCrossSection <- renderPlotly({
     potomacchannelplotly <- plot_ly()%>%
-      config(displayModeBar=T, modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d"),
+      config(displayModeBar=T, displaylogo=F, modeBarButtonsToRemove = c("zoom", "autoScale2d","toggleSpikelines","select2d","lasso2d", "zoomin", "zoomOut", "pan"),
              toImageButtonOptions= list(filename = 'Potomac Cross-Section', width = 1000, height = 750)) %>%
       add_trace(x=potomacchanneldata$distfrommouth,y=potomacchanneldata$Sdepth
                 ,type='scatter',mode='markers'
@@ -454,7 +454,7 @@ server <- function(input, output, session) {
     plot_ly(historicbaydata_fishingareas_summary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
             type = 'bar') %>%
       config(displayModeBar=T, displaylogo=F, 
-             modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d"),
+             modeBarButtonsToRemove = c("zoom", "autoScale2d","toggleSpikelines","select2d","lasso2d", "zoomin", "zoomOut", "pan"),
              toImageButtonOptions= list(filename = 'Hot Spot Suitability 10 Yrs', width = 800, height = 500)) %>%
       layout(title = paste('Fishing Area Habitat Suitability for', lateorearly, monthname, 'Ten Year History', sep = " "),
              yaxis = list(title = 'Percent of Habitat'),
@@ -490,7 +490,7 @@ server <- function(input, output, session) {
     plot_ly(historicbaydata_summary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
             type = 'bar') %>%
       config(displayModeBar=T, displaylogo=F, 
-             modeBarButtonsToRemove = c("autoScale2d","hoverCompareCartesian","toggleSpikelines","select2d","lasso2d"),
+             modeBarButtonsToRemove = c("zoom", "autoScale2d","toggleSpikelines","select2d","lasso2d", "zoomin", "zoomOut", "pan"),
              toImageButtonOptions= list(filename = 'Maryland Bay Habitat Suitability 10 Yrs', width = 800, height = 500)) %>%
       layout(title = paste('Maryland Bay Habitat Suitability for', lateorearly, monthname, 'Ten Year History', sep = " "),
              yaxis = list(title = 'Percent of Habitat'),
