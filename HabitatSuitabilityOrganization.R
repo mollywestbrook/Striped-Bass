@@ -23,7 +23,7 @@ library(ragg)
 #Define Variables
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv("BAY893.csv")
+rawcruisedata<-read_csv("BAY894.csv")
 
 #save a copy to the stripd bass habitat:
 #fwrite(rawcruisedata, file = here("Striped-Bass-Habitat-Suitability"), "BAY893.csv", row.names=FALSE)
@@ -62,16 +62,12 @@ marginalDO<-2
 unsuitableDO<-2
 
 #color palette:
-#little object necessary for stacked bar plots
 suitability_colors <- c(
   "Unsuitable" = "black",
   "Marginal" = "orange",
   "Tolerable" = "yellow",
   "Suitable" = "dodgerblue"
 )
-
-#fonts to match ggplot to plotly
-verdana <- 'verdana'
 #############################################################################################
 
 #Step one: bring in this month's DO and temp files, and format
@@ -153,15 +149,18 @@ wholebaydata <- wholebaydata %>%
 #Identify which bay segments we have --> I may put these segments in a file
 #it will just look visually more appealing and we won't have to update the code
 #if the segments change, we can just update the file
-mdsegments<-c("BACOH","BIGMH","BOHOH"
-              ,"BSHOH","C&DOH","CB1TF","CB2OH","CB3MH","CB4MH","CB5MH_MD","CB5MH"
-              ,"CHOMH1","CHOMH2","CHOOH","CHOTF","CHSMH","CHSOH","CHSTF"
-              ,"EASMH","ELKOH","FSBMH","GUNOH","HNGMH","LCHMH","MAGMH"
-              ,"MANMH","MATTF","MIDOH","NANMH","NANOH","NANTF","NORTF"
-              ,"PATMH","PAXMH","PAXOH","PAXTF","PISTF","POCMH","POCOH"
-              ,"POCTF","POCMH_MD","POTMH","POTOH","POTTF","RHDMH","SASOH","SEVMH"
-              ,"SOUMH","TANMH","TANMH_MD","WICMH","WSTMH")
-mddatathiscruise<-wholebaydata[wholebaydata$Segment %in% mdsegments,]
+# mdsegments<-c("BACOH","BIGMH","BOHOH"
+#               ,"BSHOH","C&DOH","CB1TF","CB2OH","CB3MH","CB4MH","CB5MH_MD","CB5MH"
+#               ,"CHOMH1","CHOMH2","CHOOH","CHOTF","CHSMH","CHSOH","CHSTF"
+#               ,"EASMH","ELKOH","FSBMH","GUNOH","HNGMH","LCHMH","MAGMH"
+#               ,"MANMH","MATTF","MIDOH","NANMH","NANOH","NANTF","NORTF"
+#               ,"PATMH","PAXMH","PAXOH","PAXTF","PISTF","POCMH","POCOH"
+#               ,"POCTF","POCMH_MD","POTMH","POTOH","POTTF","RHDMH","SASOH","SEVMH"
+#               ,"SOUMH","TANMH","TANMH_MD","WICMH","WSTMH")
+#new update: try out on the Aug data, then delete above if it works. 
+mdsegements <- fread("mdsegments.csv", header = F)
+mddatathiscruise<-wholebaydata %>%
+  filter(Segment %in% mdsegements$V1)
 
 ###############################
 
@@ -184,14 +183,14 @@ wholebaydatacoords_sf <- st_as_sf(wholebaydatacoords, coords = c("long","lat"),c
 fishingareacoords <- st_join(wholebaydatacoords_sf, fishingareapolygons.utm, join = st_within, left = FALSE)
 
 #transform the coordinates from simple features to dataframe numbers
-fishingareacoords_df<-as.data.frame(fishingareacoords)
-fishingareacoords_df$X<-substring(fishingareacoords_df$geometry,3,nchar(fishingareacoords_df))
-fishingareacoords_df$X<-gsub("\\,.*","",fishingareacoords_df$X)
-fishingareacoords_df$Y<-gsub(".*,","",fishingareacoords_df$geometry)
-fishingareacoords_df$Y<-substring(fishingareacoords_df$Y,1,nchar(fishingareacoords_df$Y)-1)
-fishingareacoords_df$X<-as.numeric(as.character(fishingareacoords_df$X))
-fishingareacoords_df$Y<-as.numeric(as.character(fishingareacoords_df$Y))
-fishingareacoords_df<-fishingareacoords_df[c("X","Y","name")]
+fishingareacoords_df <- as.data.frame(fishingareacoords)
+fishingareacoords_df$X <- substring(fishingareacoords_df$geometry,3,nchar(fishingareacoords_df))
+fishingareacoords_df$X <- gsub("\\,.*","",fishingareacoords_df$X)
+fishingareacoords_df$Y <- gsub(".*,","",fishingareacoords_df$geometry)
+fishingareacoords_df$Y <- substring(fishingareacoords_df$Y,1,nchar(fishingareacoords_df$Y)-1)
+fishingareacoords_df$X <- as.numeric(as.character(fishingareacoords_df$X))
+fishingareacoords_df$Y <- as.numeric(as.character(fishingareacoords_df$Y))
+fishingareacoords_df <- fishingareacoords_df[c("X","Y","name")]
 colnames(fishingareacoords_df)[which(names(fishingareacoords_df) == "X")] <- "UTMX"
 colnames(fishingareacoords_df)[which(names(fishingareacoords_df) == "Y")] <- "UTMY"
 
@@ -316,7 +315,8 @@ historicbaydata <- historicbaydata %>%
   )
 
 #sort into bay segments:
-historicbaydata<-historicbaydata[historicbaydata$Segment %in% mdsegments,]
+historicbaydata<-historicbaydata %>%
+  filter(Segment %in% mdsegements$V1)
 
 rm(yearlist)
 
@@ -374,7 +374,7 @@ baymap
 
 #Pie Charts Habitat Suitability
 
-################Whole Bay
+################MD Bay
 
 #calculate bottom summary
 wholebaybottomsummary <- mddatathiscruise.dd_bottom %>%
@@ -428,7 +428,7 @@ fishinghotspotsplot
 
 #Cross-section figures
 
-##############Mainstem cross-section
+##############MD cross-section
 
 #bring in cross section file
 crosssectionmain<-read_csv("mainchannelpointsCLEAN.csv")
@@ -647,7 +647,7 @@ historicmeans_hs_plot <-ggplot(historicalmeans_hs, aes(x=as.factor(monthseq)))+
   scale_fill_manual(name="Suitability Dataset", values=c("darkgreen"), labels=c("Historic Range (1985-22)"))+
   xlab("Month")+
   ylab("Suitable Percent of Habitat")+
-  theme(text=element_text(size=14, family=verdana),
+  theme(text=element_text(size=14),
         legend.position = c(0.15, 0.2),
         legend.text=element_text(size=10),
         legend.title=element_text(size=11),
@@ -687,7 +687,7 @@ historicmeans_wb_plot <-ggplot(historicalmeans_wb, aes(x=as.factor(monthseq)))+
   scale_fill_manual(name="Suitability Dataset", values=c("darkgreen"), labels=c("Historic Range (1985-22)"))+
   xlab("Month")+
   ylab("Suitable Percent of Habitat")+
-  theme(text=element_text(size=14, family=verdana),
+  theme(text=element_text(size=14),
         legend.position=c(0.15, 0.2),
         legend.text=element_text(size=10),
         legend.title=element_text(size=11),

@@ -30,10 +30,10 @@ library(ragg)
 
 #### UPDATE THIS WITH CURRENT CRUISE FILE
 
-thiscruise <- "BAY893.csv"
+thiscruise <- "BAY894.csv"
 
 #late or early? Update
-lateorearly <- "Late"
+lateorearly <- "Early"
 
 #########################################
 
@@ -171,8 +171,19 @@ ui <- fluidPage(
             p(uiOutput("HowToUse"))
           ),
           navset_card_tab( 
-            nav_panel("Legend", imageOutput('SuitableCriteria')), 
-            nav_panel("Striped Bass Squeeze", imageOutput('StripedBassSqueeze')), 
+              nav_panel("Legend", 
+                        img(src = 'Bass_Suitable_Criteria.png', 
+                            alt = "Suitable habitat criteria for Striped Bass,
+                            Blue supports normal growth (less than 82.4F and greater than 4mg/L DO),
+                            Yellow indicates tolerable habitat (between 82.4 and 84.2F and 3-4mg/L DO,
+                            ORange indicates marginal habitat (between 84.2 and 86F and 2-3 mg/L DO,
+                            Black indicates unsuitable habitat (greater than 86F and less than 2 mg/L DO.")), 
+              nav_panel("Striped Bass Squeeze", 
+                        img(src = 'Striped_Bass_Squeeze.png', 
+                            alt = "Striped bass squeeze is a hypothesis 
+                            that when temperatures on the surface of the water heat, 
+                            and O2 is depleted on the bottom, striped bass will be
+                            squeezed into the middle of the habitat.")), 
             nav_panel("More Info", uiOutput('DNRLinks'))
           )
         )
@@ -218,11 +229,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
-  #render logo
-  output$Logo <- renderImage({
-    filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'DNR_logo_final.png')))
-    list(src = filename, alt = "DNR Logo", width=100)
-  }, deleteFile = FALSE)
+  ##############################################################################
   
   #this first section contains the app instructions + information
   
@@ -252,18 +259,6 @@ server <- function(input, output, session) {
     ))
   })
   
-  #render suitable criteria legend
-  output$SuitableCriteria <- renderImage({
-    filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Bass Suitable Criteria.png')))
-    list(src = filename, alt = "Striped Bass Habitat Suitability Criteria", width="100%")
-  }, deleteFile = FALSE)
-  
-  #render striped bass squeeze image
-  output$StripedBassSqueeze <- renderImage({
-    filename <- normalizePath(file.path(here('Striped-Bass-Habitat-Suitability', 'Striped Bass Squeeze.png')))
-    list(src = filename, alt = "Striped Bass Squeeze", width="100%")
-  }, deleteFile = FALSE)
-  
   #more information
   output$DNRLinks <- renderUI({
     HTML(paste(
@@ -279,6 +274,8 @@ server <- function(input, output, session) {
       sep=""
     ))
   })
+  
+  ##############################################################################
 
   #this second section operates the leaflet map and pie chart interactivity:
   
@@ -394,6 +391,8 @@ server <- function(input, output, session) {
 
   })
   
+  ##############################################################################
+  
   #this next section contains the cross-section images:
   
   output$WholeBayCrossSection <- renderPlotly({
@@ -447,8 +446,10 @@ server <- function(input, output, session) {
       layout(title = 'Potomac River Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20))
     potomacchannelplotly
   })
+  
+  ##############################################################################
 
-#final section is the historical data
+  #final section is the historical data
   
   output$HotSpot10yrs <- renderPlotly({
     plot_ly(historicbaydata_fishingareas_summary, x = ~year, y = ~percent, color = ~Habitat, colors = suitability_colors,
