@@ -23,7 +23,7 @@ library(ragg)
 #Define Variables
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv("BAY894.csv")
+rawcruisedata<-read_csv("BAY895.csv")
 
 #save a copy to the stripd bass habitat:
 #fwrite(rawcruisedata, file = here("Striped-Bass-Habitat-Suitability"), "BAY893.csv", row.names=FALSE)
@@ -146,18 +146,7 @@ wholebaydata <- wholebaydata %>%
     habitat == "Suitable" ~ "dodgerblue",
     habitat == "NA" ~ "grey90"))
 
-#Identify which bay segments we have --> I may put these segments in a file
-#it will just look visually more appealing and we won't have to update the code
-#if the segments change, we can just update the file
-# mdsegments<-c("BACOH","BIGMH","BOHOH"
-#               ,"BSHOH","C&DOH","CB1TF","CB2OH","CB3MH","CB4MH","CB5MH_MD","CB5MH"
-#               ,"CHOMH1","CHOMH2","CHOOH","CHOTF","CHSMH","CHSOH","CHSTF"
-#               ,"EASMH","ELKOH","FSBMH","GUNOH","HNGMH","LCHMH","MAGMH"
-#               ,"MANMH","MATTF","MIDOH","NANMH","NANOH","NANTF","NORTF"
-#               ,"PATMH","PAXMH","PAXOH","PAXTF","PISTF","POCMH","POCOH"
-#               ,"POCTF","POCMH_MD","POTMH","POTOH","POTTF","RHDMH","SASOH","SEVMH"
-#               ,"SOUMH","TANMH","TANMH_MD","WICMH","WSTMH")
-#new update: try out on the Aug data, then delete above if it works. 
+#filter for MD segments:
 mdsegements <- fread("mdsegments.csv", header = F)
 mddatathiscruise<-wholebaydata %>%
   filter(Segment %in% mdsegements$V1)
@@ -365,10 +354,10 @@ baymap
 #save the shape files for the app:
 
 #commented for subsequent runs; st_write doesn't overwrite, so uncomment this line on first run
-
- # st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
- # st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
- # st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
+# 
+# st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
+# st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
+# st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
 
 ###################################################################################
 

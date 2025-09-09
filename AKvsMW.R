@@ -3,11 +3,12 @@
 library(here)
 library(tidyverse)
 library(data.table)
+library(readxl)
 
 ###Cruise Sheets
 
-cruisedata_ak<-read_csv("BAY893.csv")
-cruisedata_mw<-read_csv("BAY893_mw.csv")
+cruisedata_ak<-read_xlsx("BAY895.xlsx")
+cruisedata_mw<-read_csv("BAY895_forbecca.csv")
 
 #note: m's sheet is in F, quick convert to C:
 cruisedata_mw$Wtemp <- (cruisedata_mw$Wtemp - 32)/1.8
@@ -25,8 +26,8 @@ setdiff(cruisedata_ak$Cruise, cruisedata_mw$Cruise)
 setdiff(cruisedata_ak$SECCHI, cruisedata_mw$SECCHI)
 
 ###DO Sheets
-DOdata_ak <- read_csv("DO_2025_07full_LATE.txt")
-DOdata_mw <- read_csv("DO_2025_07full_LATE_mw.txt")
+DOdata_ak <- read_csv("DO_2025_08full_LATE.txt")
+DOdata_mw <- read_csv("DO_2025_08full_LATE_mw.txt")
 
 #DOdata_mw_new <- read_csv("DO_2025_07full_EARLY_mw_updated.txt")
 
@@ -67,8 +68,8 @@ setdiff(DOt_ak$DO, DOt_mw$DO)
 
 ###Temp Sheets
 
-Wtempdata_ak <- read_csv("WTEMP_2025_07full_LATE.txt")
-Wtempdata_mw <- read_csv("WTEMP_2025_07full_LATE_mw.txt")
+Wtempdata_ak <- read_csv("WTEMP_2025_08full_LATE.txt")
+Wtempdata_mw <- read_csv("WTEMP_2025_08full_LATE_mw.txt")
 
 wtemp<-Wtempdata_ak
 wtemp[wtemp==-9] <- NA
