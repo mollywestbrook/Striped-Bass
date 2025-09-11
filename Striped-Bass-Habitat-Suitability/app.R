@@ -50,7 +50,7 @@ enddate<-max(rawcruisedata$Date)
 #   filter(Date == startdate)
 
 #This section ID's the cruise date to grab associated DO and Temp files later
-monthdate <- as.numeric(substr(startdate,6,7))
+monthdate <- as.numeric(substr(enddate,6,7))
 monthname <- case_when(monthdate == '1' ~ 'January',
                        monthdate == '2' ~ 'February',
                        monthdate == '3' ~ 'March',
