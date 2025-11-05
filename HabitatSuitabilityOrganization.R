@@ -23,14 +23,14 @@ library(ragg)
 #Define Variables
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv("BAY897.csv")
+rawcruisedata<-read_csv("BAY899.csv")
 
 #save a copy to the stripd bass habitat:
 #fwrite(rawcruisedata, file = here("Striped-Bass-Habitat-Suitability"), "BAY893.csv", row.names=FALSE)
 
 ###Ensure the data is confined to a single month, otherwise filter out extraneous dates
-startdate<-min(rawcruisedata$Date)
-enddate<-max(rawcruisedata$Date)
+startdate<-min(rawcruisedata$Date, na.rm=T)
+enddate<-max(rawcruisedata$Date, na.rm=T)
 
 # rawcruisedata <- rawcruisedata %>%
 #   filter(Date == startdate)
@@ -355,9 +355,9 @@ baymap
 
 # commented for subsequent runs; st_write doesn't overwrite, so uncomment this line on first run
 # 
-st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
-st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
-st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
+# st_write(fishingareapolygons.dd, here("Striped-Bass-Habitat-Suitability", "FishingAreaPolygons", paste(monthname, thisyear, "fishingareapolygons.dd.shp", sep="")))
+# st_write(fishingareacoords.dd_bottom, here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality", paste(monthname, thisyear, "fishingareacoords.dd_bottom.shp", sep="")))
+# st_write(mddatathiscruise.dd_bottom, here("Striped-Bass-Habitat-Suitability", "WholeBayQuality", paste(monthname, thisyear, "mddatathiscruise_dd_bottom.shp", sep="")))
 
 ###################################################################################
 
