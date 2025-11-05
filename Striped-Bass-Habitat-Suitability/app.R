@@ -43,8 +43,8 @@ lateorearly <- ""
 rawcruisedata<-read_csv(thiscruise)
 
 ###Ensure the data is confined to a single month, otherwise filter out extraneous dates
-startdate<-min(rawcruisedata$Date)
-enddate<-max(rawcruisedata$Date)
+startdate<-min(rawcruisedata$Date, na.rm=T)
+enddate<-max(rawcruisedata$Date, na.rm=T)
 
 # rawcruisedata <- rawcruisedata %>%
 #   filter(Date == startdate)
