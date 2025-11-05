@@ -295,7 +295,8 @@ server <- function(input, output, session) {
                  marker = list(colors = fishinghotspotssummary$color)) %>%
       config(displayModeBar=T, displaylogo=F, 
              toImageButtonOptions= list(filename = 'Fishing Area Pie Chart', width = 500, height = 500)) %>%
-      layout(title = 'Fishing Area Habitat Suitability',
+      layout(title = "Fishing Area Habitat Suitability",
+             margin = list(l=50, r=50, b=50, t=50, pad=20),
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     event_register(p, "plotly_click")
@@ -308,7 +309,7 @@ server <- function(input, output, session) {
                  labels = ~habitat, 
                  values = ~percent, 
                  type = 'pie',
-                 textposition = 'outside',
+                 textposition = 'inside',
                  source = 'WholeBayPie', 
                  textinfo = 'label+percent',
                  customdata = ~color,
@@ -316,6 +317,7 @@ server <- function(input, output, session) {
       config(displayModeBar=T, displaylogo=F, 
              toImageButtonOptions= list(filename = 'Maryland Bay Pie Chart', width = 500, height = 500)) %>%
       layout(title = 'Maryland Bay Habitat Suitability',
+             margin = list(l=50, r=50, b=50, t=50, pad=70),
              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
     event_register(p, "plotly_click")
