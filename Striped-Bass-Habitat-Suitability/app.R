@@ -30,7 +30,7 @@ library(ragg)
 
 #### UPDATE THIS WITH CURRENT CRUISE FILE
 
-thiscruise <- "BAY899.csv"
+thiscruise <- "BAY900.csv"
 
 #late or early? Update
 lateorearly <- ""
@@ -420,7 +420,7 @@ server <- function(input, output, session) {
       layout(xaxis=list(title="Distance from MD-VA Line (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
       layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
       layout(title = 'MD Bay Mainstem Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20)
-             # ,annotations = list(x = 0.3, y = 0, text = "Data not collected in lower MD Mainstem for September due to poor weather.",
+             # ,annotations = list(x = 0.3, y = 0, text = "Data not collected [-] for [September]-] due to [-].",
              #                    showarrow = F, xref='paper', yref='paper',
              #                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
              #                    font=list(size=12)
@@ -451,7 +451,7 @@ server <- function(input, output, session) {
       layout(xaxis=list(title="Distance from mouth of Potomac (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
       layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
       layout(title = 'Potomac River Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20)
-             # ,annotations = list(x = 0.3, y = 0, text = "Data not collected in lower MD Mainstem for September due to poor weather.",
+             # ,annotations = list(x = 0.3, y = 0, text = "Data not collected [-] for [September]-] due to [-].",
              #                    showarrow = F, xref='paper', yref='paper',
              #                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
              #                    font=list(size=12))
@@ -473,10 +473,10 @@ server <- function(input, output, session) {
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack',
              margin = list(b = 100)
-             # ,annotations = list(x = 1.1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
-             #                    showarrow = F, xref='paper', yref='paper', 
-             #                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
-             #                    font=list(size=11))
+             ,annotations = list(x = 1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.",
+                                showarrow = F, xref='paper', yref='paper',
+                                xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                                font=list(size=11))
              )
   })
   
@@ -509,10 +509,10 @@ server <- function(input, output, session) {
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack',
              margin = list(b = 100)
-             # ,annotations = list(x = 1.1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.", 
-             #                    showarrow = F, xref='paper', yref='paper', 
-             #                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
-             #                    font=list(size=11))
+             ,annotations = list(x = 1.1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.",
+                                showarrow = F, xref='paper', yref='paper',
+                                xanchor='right', yanchor='auto', xshift=0, yshift=0,
+                                font=list(size=11))
              )
   })
   

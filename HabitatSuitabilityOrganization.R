@@ -23,7 +23,7 @@ library(ragg)
 #Define Variables
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv("BAY899.csv")
+rawcruisedata<-read_csv("BAY900.csv")
 
 #save a copy to the stripd bass habitat:
 #fwrite(rawcruisedata, file = here("Striped-Bass-Habitat-Suitability"), "BAY893.csv", row.names=FALSE)
