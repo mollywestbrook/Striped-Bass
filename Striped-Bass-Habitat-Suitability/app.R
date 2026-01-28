@@ -40,7 +40,7 @@ lateorearly <- ""
 #variables the app needs
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv(thiscruise)
+rawcruisedata<-fread(thiscruise)
 
 ###Ensure the data is confined to a single month, otherwise filter out extraneous dates
 startdate<-min(rawcruisedata$Date, na.rm=T)
@@ -87,42 +87,38 @@ verdana <- 'verdana'
 #Bring in objects
 
 files <- list.files(pattern = "wholebaysummary")
-wholebaybottomsummary <- read_csv(files[1])
+wholebaybottomsummary <- fread(files[1])
 
 files <- list.files(pattern = "fishinghotspotsummary")
-fishinghotspotssummary <- read_csv(files[1])
+fishinghotspotssummary <- fread(files[1])
 
 files <- list.files(pattern = "historicbaydatafishingareassummary")
-historicbaydata_fishingareas_summary <- read_csv(files[1])
-
+historicbaydata_fishingareas_summary <- fread(files[1])
 historicbaydata_fishingareas_summary$Habitat <- factor(historicbaydata_fishingareas_summary$Habitat, levels = c("Suitable", "Tolerable", "Marginal", "Unsuitable"))
 
 files <- list.files(pattern = "historicbaydatasummary")
-historicbaydata_summary <- read_csv(files[1])
-
+historicbaydata_summary <- fread(files[1])
 historicbaydata_summary$Habitat <- factor(historicbaydata_summary$Habitat, levels = c("Suitable", "Tolerable", "Marginal", "Unsuitable"))
 
 files <- list.files(pattern = "mainchanneldata")
-mainchanneldata <- read_csv(files[1])
+mainchanneldata <- fread(files[1])
 
 files <- list.files(pattern = "labels_mainstem")
-labels_mainstem <- read_csv(files[1])
+labels_mainstem <- fread(files[1])
 
 files <- list.files(pattern = "potomacchanneldata")
-potomacchanneldata <- read_csv(files[1])
+potomacchanneldata <- fread(files[1])
 
 files <- list.files(pattern = "labels_potomac")
-labels_potomac <- read_csv(files[1])
+labels_potomac <- fread(files[1])
 
 files <- list.files(pattern = "historicalmeans_hs")
-historicalmeans_hs <- read_csv(files[1])
-
+historicalmeans_hs <- fread(files[1])
 labels <- historicalmeans_hs$months
 breaks <- historicalmeans_hs$monthseq
 
 files <- list.files(pattern = "historicalmeans_wb")
-historicalmeans_wb <- read_csv(files[1])
-
+historicalmeans_wb <- fread(files[1])
 labels <- historicalmeans_wb$months
 breaks <- historicalmeans_wb$monthseq
 
