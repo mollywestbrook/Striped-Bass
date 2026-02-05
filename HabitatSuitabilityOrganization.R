@@ -23,7 +23,7 @@ library(ragg)
 #Define Variables
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv("BAY903.csv")
+rawcruisedata<-read_csv("BAY905.csv")
 
 #save a copy to the stripd bass habitat:
 #fwrite(rawcruisedata, file = here("Striped-Bass-Habitat-Suitability"), "BAY893.csv", row.names=FALSE)
@@ -604,6 +604,10 @@ historicbaydata_fishingareas_plot
 
 #note: make sure to update the csvs of percentsuitable_hotspots_currentyear and percentsuitable_wholebay_currentyear
 #by taking the percent suitable volume of the current year as calculated in either the pie chart or stacked bar plot
+
+#at year-rollover, calculate new min/max and new average -- use formula m_n = m_n-1 + (a_n - m_n-1)/n
+#where m is avg, a is new value (outlined here: https://math.stackexchange.com/questions/106700/incremental-averaging)
+#and n is calculated from 1984 (as of 2026, currently 42)
 
 ###########Fishing Hot Spots:
 
