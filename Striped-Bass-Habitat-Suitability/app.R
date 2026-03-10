@@ -126,7 +126,12 @@ fishingareapolygons.dd <- st_read(here("Striped-Bass-Habitat-Suitability", "Fish
 
 fishingareacoords.dd_bottom <- st_read(here("Striped-Bass-Habitat-Suitability", "FishingAreaQuality"))
 
+#transform this into a df so ADA users can download
+fishingareacoordinates <- fortify(fishingareacoords.dd_bottom)
+
 mddatathiscruise.dd_bottom <- st_read(here("Striped-Bass-Habitat-Suitability", "WholeBayQuality"))
+#transform this into a df so ADA users can download
+chesapeakebaycoordinates <- fortify(mddatathiscruise.dd_bottom)
 
 
 ############ UI ######################
@@ -136,6 +141,7 @@ mddatathiscruise.dd_bottom <- st_read(here("Striped-Bass-Habitat-Suitability", "
 
 ui <- fluidPage(
   tags$head(includeHTML(here("stripedbassanalytics.html"))),
+  tags$html(lang="en"),
   theme = bs_theme(preset = "flatly"),
   
   #styling the info tab to be a light blue
@@ -152,7 +158,8 @@ ui <- fluidPage(
   tags$div(
     style = "display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 20px;",
     tags$h2(paste("Maryland Striped Bass Habitat Suitability for", lateorearly, monthname, thisyear, sep=' '), style = "margin: 0;"),
-    tags$img(src = "DNR_logo_final.png", height = "60px")
+    tags$img(src = "DNR_logo_final.png", height = "60px", 
+             alt = "The MD DNR logo, featuring a heron flying across a sun towards a pine tree over water. It is drawn with heavy lines.")
   ),
   
   hr(),
@@ -182,6 +189,29 @@ ui <- fluidPage(
                             squeezed into the middle of the habitat.")), 
             nav_panel("More Info", uiOutput('DNRLinks'))
           )
+        )
+      ),
+      open=F
+    )
+  ),
+  
+  layout_columns(
+    accordion(
+      accordion_panel(
+        title = HTML(paste("<b>", "ADA Data Downloads", "</b>")),
+        card(
+          card_header("ADA Data Downloads"),
+          uiOutput("AdaExplainer"),
+          downloadButton("downloadData1", "Download Chesapeake Bay Pie Chart Summary Data", `aria-label` = "Download suitability summary charts for the entire MD Chesapeake Bay."),
+          downloadButton("downloadData2", "Download Fishing Hot Spot Pie Chart Summary Data", `aria-label` = "Download suitability summary charts for popular fishing spots."),
+          downloadButton("downloadData3", "Download Chesapeake Bay Depth Data", `aria-label` = "Download suitability by depth for the entire MD Chesapeake Bay."),
+          downloadButton("downloadData4", "Download Potomac River Depth Data", `aria-label` = "Download suitability by depth for the Potomac River."),
+          downloadButton("downloadData5", "Download This Year Hot Spot Mean Percent Suitability Data",  `aria-label` = "Download the percentage of water of suitable quality for popular fishing spots throughout this year comapred to historical ranges."),
+          downloadButton("downloadData6", "Download Hot Spot Suitability Historic Comparison Data",  `aria-label` = "Download the comparison of fishing spot suitability for this month for the previous ten years."),
+          downloadButton("downloadData7", "Download This Year Bay Mean Percent Suitability Data",  `aria-label` = "Download the percentage of water of suitable quality for the MD Chesapeake Bay throughout this year comapred to historical ranges."),
+          downloadButton("downloadData8", "Download Bay Suitability Historic Comparison Data",  `aria-label` = "Download the comparison of the MD Chesapeake Bay suitability for this month for the previous ten years."),
+          downloadButton("MapData1", "Download Fishing Area Spatial Suitability Coordinates",  `aria-label` = "Download the spatial suitability  of popular fishing areas in the Chesapeake Bay."),
+          downloadButton("MapData2", "Download Chesapeake Bay Spatial Suitability Coordinates",  `aria-label` = "Download the spatial suitability of the MD Chesapeake Bay.")
         )
       ),
       open=F
@@ -270,6 +300,69 @@ server <- function(input, output, session) {
       sep=""
     ))
   })
+  
+  ##############################################################################
+  
+  #Ada Information
+  
+  output$AdaExplainer <- renderUI({
+    HTML(paste0(
+      "<p>This app utilizes interactive charts and maps to best predict where to find Striped Bass within the MD Chesapeake Bay. </p>",
+      "<p>If you are utilizing a screen reader, these data are available to download in chart form via the buttons below. </p>",
+      "<p>This app is keyboard navigable. Links are navigable via the 'tab' button. To select a button, hit 'enter' and your download should begin. </p>"
+    ))
+  })
+  
+  #these downloaders allow a user to download the sheets pulled in from the beginning. 
+  output$downloadData1 <- downloadHandler(
+    filename = function() { paste(monthname, "_", thisyear, "_", "wholebaybottomsummary", ".csv") },
+    content = function(file) { fwrite(wholebaybottomsummary, file) }
+  )
+  
+  output$downloadData2 <- downloadHandler(
+    filename = function() { paste0(monthname, "_", thisyear, "_", "fishinghotspotssummary", ".csv") },
+    content = function(file) { fwrite(fishinghotspotssummary, file) }
+  )
+  
+  output$downloadData3 <- downloadHandler(
+    filename = function() { paste0(monthname, "_", thisyear, "_", "mainchanneldata", ".csv") },
+    content = function(file) { fwrite(mainchanneldata, file) }
+  )
+  
+  output$downloadData4 <- downloadHandler(
+    filename = function() { paste0(monthname, "_", thisyear, "_", "potomacchanneldata", ".csv") },
+    content = function(file) { fwrite(potomacchanneldata, file) }
+  )
+  
+  output$downloadData5 <- downloadHandler(
+    filename = function() { paste0(monthname, "_", thisyear, "_", "historicalmeans_hs", ".csv") },
+    content = function(file) { fwrite(historicalmeans_hs, file) }
+  )
+  
+  output$downloadData6 <- downloadHandler(
+    filename = function() { paste0(monthname, "_", thisyear, "_", "historicbaydata_fishingareas_summary", ".csv") },
+    content = function(file) { fwrite(historicbaydata_fishingareas_summary, file) }
+  )
+  
+  output$downloadData7 <- downloadHandler(
+    filename = function() { paste0(monthname, "_", thisyear, "_", "historicalmeans_wb", ".csv") },
+    content = function(file) { fwrite(historicalmeans_wb, file) }
+  )
+  
+  output$downloadData8 <- downloadHandler(
+    filename = function() { paste0(monthname, "_", thisyear, "_", "historicbaydata_summary", ".csv") },
+    content = function(file) { fwrite(historicbaydata_summary, file) }
+  )
+  
+  output$MapData1 <- downloadHandler(
+    filename = function() { paste0(monthname, "_", thisyear, "_", "fishingareacoordinates", ".csv") },
+    content = function(file) { fwrite(fishingareacoordinates, file) }
+  ) 
+  
+  output$MapData2 <- downloadHandler(
+    filename = function() { paste0(monthname, "_", thisyear, "_", "chesapeakebaycoordinates", ".csv") },
+    content = function(file) { fwrite(chesapeakebaycoordinates, file) }
+  )
   
   ##############################################################################
 
