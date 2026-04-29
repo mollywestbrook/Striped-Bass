@@ -30,7 +30,7 @@ library(ragg)
 
 #### UPDATE THIS WITH CURRENT CRUISE FILE
 
-thiscruise <- "BAY909.csv"
+thiscruise <- "BAY911.csv"
 
 #late or early? Update
 lateorearly <- ""
@@ -509,10 +509,10 @@ server <- function(input, output, session) {
       layout(xaxis=list(title="Distance from MD-VA Line (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
       layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
       layout(title = 'MD Bay Mainstem Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20)
-             ,annotations = list(x = 0.25, y = 0.05, text = "Data estimated for upper Mainstem based on Tributary data. \nMainstem stations not sampled due to ice.",
-                                showarrow = F, xref='paper', yref='paper',
-                                xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                                font=list(size=12))
+             # ,annotations = list(x = 0.25, y = 0.05, text = "Data not collected [-] for [Month] due to [-].",
+             #                    showarrow = F, xref='paper', yref='paper',
+             #                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
+             #                    font=list(size=12))
              )
     mainchannelplotly
   })
@@ -540,7 +540,7 @@ server <- function(input, output, session) {
       layout(xaxis=list(title="Distance from mouth of Potomac (miles)",autorange="reversed", zeroline=F, showgrid=F))%>%
       layout(yaxis=list(title="Depth (ft)",autorange="reversed", zeroline=F, showgrid=F)) %>%
       layout(title = 'Potomac River Cross Section', margin = list(l=50, r=50, b=50, t=50, pad=20)
-             # ,annotations = list(x = 0.3, y = 0, text = "Data not collected [-] for [September]-] due to [-].",
+             # ,annotations = list(x = 0.3, y = 0, text = "Data not collected [-] for [Month] due to [-].",
              #                    showarrow = F, xref='paper', yref='paper',
              #                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
              #                    font=list(size=12))
