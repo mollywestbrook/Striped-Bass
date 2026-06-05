@@ -1,0 +1,5 @@
+habitat,color,volume,volumetotal,percent
+Marginal,orange,0.0929375,5.7147425,1.6262762495423
+Suitable,dodgerblue,5.42218,5.7147425,94.8805654847966
+Tolerable,yellow,0.19775,5.7147425,3.4603483884007
+Unsuitable,black,0.001875,5.7147425,0.0328098772604365
