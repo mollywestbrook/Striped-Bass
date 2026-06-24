@@ -33,7 +33,7 @@ library(ragg)
 thiscruise <- "BAY913.csv"
 
 #late or early? Update
-lateorearly <- ""
+lateorearly <- "Early"
 
 setwd(here("Striped-Bass-Habitat-Suitability"))
 

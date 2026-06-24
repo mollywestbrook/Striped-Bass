@@ -378,6 +378,7 @@ wholebaybottomsummary <- mddatathiscruise.dd_bottom %>%
 fwrite(wholebaybottomsummary, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "wholebaysummary.csv", sep="")), row.names=FALSE)
 
 #automatically write percent suitable to csv
+# MW -- fix this later, this doesn't work!
 percentages_wholebay <- fread("percentsuitable_wholebay_currentyear.csv")
 percentages_wholebay <- percentages_wholebay %>%
   mutate(percentsuitablewb = case_when(months == monthname ~ wholebaybottomsummary[wholebaybottomsummary$habitat == "Suitable"]$percent,
