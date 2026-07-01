@@ -23,7 +23,7 @@ library(ragg)
 #Define Variables
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv("BAY913.csv")
+rawcruisedata<-read_csv("BAY915.csv")
 
 #save a copy to the stripd bass habitat:
 #fwrite(rawcruisedata, file = here("Striped-Bass-Habitat-Suitability"), "BAY893.csv", row.names=FALSE)
@@ -118,7 +118,7 @@ wholebaydata <- data.frame(DOt$Segment,
                            DOt$DO, 
                            wtempt$wtemp)
 #uncomment this line if the dfs are two different lengths
-#historicwholebaydata <- full_join(DOt, wtempt, by=c("Segment", "UTM_X", "UTM_Y", "Sdepth", "volume_m"), relationship = "many-to-many")
+#wholebaydata <- full_join(DOt, wtempt, by=c("Segment", "UTM_X", "UTM_Y", "Sdepth", "volume_m"), relationship = "many-to-many")
 names(wholebaydata) <- c("Segment", "UTMX","UTMY", "Sdepth","volume_m","DO", "Wtemp")
 
 #Cleanup
