@@ -377,13 +377,13 @@ wholebaybottomsummary <- mddatathiscruise.dd_bottom %>%
 #write this df out for the shiny app:
 fwrite(wholebaybottomsummary, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "wholebaysummary.csv", sep="")), row.names=FALSE)
 
-#automatically write percent suitable to csv
-# MW -- fix this later, this doesn't work!
-percentages_wholebay <- fread("percentsuitable_wholebay_currentyear.csv")
-percentages_wholebay <- percentages_wholebay %>%
-  mutate(percentsuitablewb = case_when(months == monthname ~ wholebaybottomsummary[wholebaybottomsummary$habitat == "Suitable"]$percent,
-                                          .default = percentsuitablewb))
-fwrite(percentages_wholebay, "percentsuitable_wholebay_currentyear.csv")
+# #automatically write percent suitable to csv
+# # MW -- fix this later, this doesn't work!
+# percentages_wholebay <- fread("percentsuitable_wholebay_currentyear.csv")
+# percentages_wholebay <- percentages_wholebay %>%
+#   mutate(percentsuitablewb = case_when(months == monthname ~ wholebaybottomsummary[wholebaybottomsummary$habitat == "Suitable"]$percent,
+#                                           .default = percentsuitablewb))
+# fwrite(percentages_wholebay, "percentsuitable_wholebay_currentyear.csv")
 
 #generate a figure
 wholebaysummaryplot <- plot_ly(wholebaybottomsummary, labels = ~habitat, values = ~percent, type = 'pie',
@@ -410,12 +410,12 @@ fishinghotspotsummary <- fishingareacoords.dd_bottom %>%
 #write out for the app
 fwrite(fishinghotspotsummary, file = here("Striped-Bass-Habitat-Suitability", paste(monthname, thisyear, "fishinghotspotsummary.csv", sep="")), row.names=FALSE)
 
-#automatically write percent suitable to csv
-percentages_hotspot <- fread("percentsuitable_hotspots_currentyear.csv")
-percentages_hotspot <- percentages_wholebay %>%
-  mutate(percentsuitablehs = case_when(months == monthname ~ fishinghotspotsummary[fishinghotspotsummary$habitat == "Suitable"]$percent,
-                                       .default = percentsuitablehs))
-fwrite(percentages_hotspot, "percentsuitable_hotspots_currentyear.csv")
+# #automatically write percent suitable to csv
+# percentages_hotspot <- fread("percentsuitable_hotspots_currentyear.csv")
+# percentages_hotspot <- percentages_wholebay %>%
+#   mutate(percentsuitablehs = case_when(months == monthname ~ fishinghotspotsummary[fishinghotspotsummary$habitat == "Suitable"]$percent,
+#                                        .default = percentsuitablehs))
+# fwrite(percentages_hotspot, "percentsuitable_hotspots_currentyear.csv")
 
 fishinghotspotsplot <- plot_ly(fishinghotspotsummary, labels = ~habitat, values = ~percent, type = 'pie',
                                textposition = 'outside',
