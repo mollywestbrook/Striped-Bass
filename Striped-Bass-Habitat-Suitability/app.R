@@ -30,10 +30,10 @@ library(ragg)
 
 #### UPDATE THIS WITH CURRENT CRUISE FILE
 
-thiscruise <- "BAY915.csv"
+thiscruise <- "BAY916.csv"
 
 #Late or Early? Update
-lateorearly <- "Late"
+lateorearly <- "Early"
 
 setwd(here("Striped-Bass-Habitat-Suitability"))
 
@@ -564,10 +564,10 @@ server <- function(input, output, session) {
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack',
              margin = list(b = 100)
-              ,annotations = list(x = 1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.",
-                                 showarrow = F, xref='paper', yref='paper',
-                                 xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                                 font=list(size=11))
+             # ,annotations = list(x = 1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.",
+             #                    showarrow = F, xref='paper', yref='paper',
+             #                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
+             #                    font=list(size=11))
              )
   })
   
@@ -600,10 +600,10 @@ server <- function(input, output, session) {
              yaxis = list(title = 'Percent of Habitat'),
              barmode = 'stack',
              margin = list(b = 100)
-              ,annotations = list(x = 1.1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.",
-                                 showarrow = F, xref='paper', yref='paper',
-                                 xanchor='right', yanchor='auto', xshift=0, yshift=0,
-                                 font=list(size=11))
+             # ,annotations = list(x = 1.1, y = -0.27, text = "Data not collected in 2020 due to Covid-19 Pandemic.",
+             #                    showarrow = F, xref='paper', yref='paper',
+             #                    xanchor='right', yanchor='auto', xshift=0, yshift=0,
+             #                    font=list(size=11))
              )
   })
   

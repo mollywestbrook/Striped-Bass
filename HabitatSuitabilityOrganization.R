@@ -23,7 +23,7 @@ library(ragg)
 #Define Variables
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv("BAY915.csv")
+rawcruisedata<-read_csv("BAY916.csv")
 
 #save a copy to the stripd bass habitat:
 #fwrite(rawcruisedata, file = here("Striped-Bass-Habitat-Suitability"), "BAY893.csv", row.names=FALSE)
@@ -703,5 +703,6 @@ historicmeans_wb_plot <-ggplot(historicalmeans_wb, aes(x=as.factor(monthseq)))+
 historicmeans_wb_plot
 
 #ggsave(paste(monthname, thisyear, 'historicmeans_hs_plot.png', sep=""), path=here("AppFigures"), width = 10, height = 6)
+
 
 
