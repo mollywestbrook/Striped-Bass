@@ -160,7 +160,7 @@ ui <- fluidPage(
   tags$div(
     style = "display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 20px;",
     tags$h2(paste("Maryland Striped Bass Habitat Suitability for", lateorearly, monthname, thisyear, sep=' '), style = "margin: 0;"),
-    tags$img(src = "DNR_logo_final.png", height = "60px", 
+    tags$img(src = here('Striped-Bass-Habitat-Suitability', 'www', 'DNR_logo_final.png'), height = "60px", 
              alt = "The MD DNR logo, featuring a heron flying across a sun towards a pine tree over water. It is drawn with heavy lines.")
   ),
   
@@ -177,14 +177,14 @@ ui <- fluidPage(
           ),
           navset_card_tab( 
               nav_panel("Legend", 
-                        img(src = 'Bass_Suitable_Criteria.png', 
+                        img(src = here('Striped-Bass-Habitat-Suitability', 'www', 'Bass_Suitable_Criteria.png'), 
                             alt = "Suitable habitat criteria for Striped Bass,
                             Blue supports normal growth (less than 82.4F and greater than 4mg/L DO),
                             Yellow indicates tolerable habitat (between 82.4 and 84.2F and 3-4mg/L DO,
                             ORange indicates marginal habitat (between 84.2 and 86F and 2-3 mg/L DO,
                             Black indicates unsuitable habitat (greater than 86F and less than 2 mg/L DO.")), 
               nav_panel("Striped Bass Squeeze", 
-                        img(src = 'Striped_Bass_Squeeze.png', 
+                        img(src = here('Striped-Bass-Habitat-Suitability', 'www', 'Striped_Bass_Squeeze.png'), 
                             alt = "Striped bass squeeze is a hypothesis 
                             that when temperatures on the surface of the water heat, 
                             and O2 is depleted on the bottom, striped bass will be
