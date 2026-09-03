@@ -8,6 +8,9 @@
 #This script will generate the data tables and figures necessary for a subsequent app file
 
 #Libraries
+library(groundhog)
+
+groundhog.library("
 library(here)
 library(tidyverse)
 library(data.table)
@@ -18,12 +21,12 @@ library(ggrepel)
 library(plotly)
 library(leafgl)
 library(htmlwidgets)
-library(ragg)
+library(ragg)", "2025-04-15")
 
 #Define Variables
 
 #What cruise are we working with? Update for this month's
-rawcruisedata<-read_csv("BAY917.csv")
+rawcruisedata<-read_csv("BAY918.csv")
 
 #save a copy to the stripd bass habitat:
 #fwrite(rawcruisedata, file = here("Striped-Bass-Habitat-Suitability"), "BAY893.csv", row.names=FALSE)

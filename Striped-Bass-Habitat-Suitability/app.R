@@ -12,7 +12,6 @@
 #It will generate the summary files this app loads in.
 
 #Load libraries 
-
 library(shiny)
 library(bslib)
 library(here)
@@ -30,10 +29,10 @@ library(ragg)
 
 #### UPDATE THIS WITH CURRENT CRUISE FILE
 
-thiscruise <- "BAY917.csv"
+thiscruise <- "BAY918.csv"
 
 #Late or Early? Update
-lateorearly <- "Early"
+lateorearly <- "Late"
 
 setwd(here("Striped-Bass-Habitat-Suitability"))
 
